@@ -11,9 +11,9 @@ public class Main {
     private final static int CHAR_SIZE = 1;
     private final static int BYTE_SIZE = 4;
     final static int INSTRUCT_SIZE = 12;
-    private final static List<String> INSTRUCTIONS = new ArrayList<String>(Arrays.asList("JMP", "JMR", "BNZ", "BGT", "BLT", "BRZ", "MOV", "LDA", "STR", "LDR", "STB", "LDB", "ADD", "ADI", "SUB", "MUL", "DIV", "AND", "OR", "CMP", "TRP"));
+    private final static List<String> INSTRUCTIONS = new ArrayList<>(Arrays.asList("JMP", "JMR", "BNZ", "BGT", "BLT", "BRZ", "MOV", "LDA", "STR", "LDR", "STB", "LDB", "ADD", "ADI", "SUB", "MUL", "DIV", "AND", "OR", "CMP", "TRP"));
     private final static String [] DIRECTIVES = new String [] {".INT", ".BYT"};
-    static int R0 = 0, R1 = 0, R2 = 0, R3 = 0, R4 = 0, R5 = 0, R6 = 0, R7 = 0, PC = 0;
+    private static int R0 = 0, R1 = 0, R2 = 0, R3 = 0, R4 = 0, R5 = 0, R6 = 0, R7 = 0, PC = 0;
     private static Map<String, Integer> SYMBOL_TABLE = new HashMap<>();
 
     public static void main(String[] args) throws IOException {
