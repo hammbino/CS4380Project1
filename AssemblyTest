@@ -11,7 +11,7 @@ START LDB R3 J
       LDB R3 F
       TRP 3
       TRP 3
-      LDR R1 A1    ;ADD Step 3 R1
+ADD   LDR R1 A1    ;ADD Step 3 R1
       LDR R2 A2
       ADD R1 R2
       MOV R3 R1

@@ -12,7 +12,7 @@ public class Main {
     private final static int BYTE_SIZE = 4;
     final static int INSTRUCT_SIZE = 12;
     private final static List<String> INSTRUCTIONS = new ArrayList<>(Arrays.asList("JMP", "JMR", "BNZ", "BGT", "BLT", "BRZ", "MOV", "LDA", "STR", "LDR", "STB", "LDB", "ADD", "ADI", "SUB", "MUL", "DIV", "AND", "OR", "CMP", "TRP"));
-    private final static String [] DIRECTIVES = new String [] {".INT", ".BYT"};
+//    private final static String [] DIRECTIVES = new String [] {".INT", ".BYT"};//Todo delete line
     private final static String intString = ".INT";
     private final static String bytString = ".BYT";
     private static int R0 = 0, R1 = 0, R2 = 0, R3 = 0, R4 = 0, R5 = 0, R6 = 0, R7 = 0, PC = 0;
@@ -25,57 +25,90 @@ public class Main {
         ByteBuffer bb = ByteBuffer.wrap(data);
         bb.order(ByteOrder.nativeOrder());
 
-
-
         //check to see if the program was run with the command line argument
         if (args.length < 1) {
             System.out.println("Error: No file was provided.");
             System.exit(0);     // TERMINATE THE PROGRAM
         }
 
-        //check to see if a scanner can be created using the file that was input
-        try {
-            fileReader = new Scanner(new FileInputStream(args[0])).useDelimiter("\\n|;");
-        } catch (FileNotFoundException x) {
-            System.out.println("ERROR: Unable to open file " + args[0]);
-            x.printStackTrace();
-            System.exit(0);   // TERMINATE THE PROGRAM
-        }
+        //flag for number of passes
+        int numberOfFilePasses = 0;
 
-        while (fileReader.hasNextLine()) {
-            String[] result = fileReader.nextLine().split("\\s+");
-            if(isLabel(result[0])) {
-                addToSymbolTable(result);
+        while(numberOfFilePasses < 2) {
+            //check to see if a scanner can be created using the file that was input
+            try {
+                fileReader = new Scanner(new FileInputStream(args[0])).useDelimiter("\\n|;");
+            } catch (FileNotFoundException x) {
+                System.out.println("ERROR: Unable to open file " + args[0]);
+                x.printStackTrace();
+                System.exit(0);   // TERMINATE THE PROGRAM
             }
+            //read each line from the file
+            while (fileReader.hasNextLine()) {
+                String[] fileInput = fileReader.nextLine().split("\\s+");
+                //check if it is the first pass
+                if(numberOfFilePasses == 0) {
+                    if (!isInstruction(fileInput[0])) {
+                        addToSymbolTable(fileInput);
+                    }
+                //check if it is the second pass
+                } else if(numberOfFilePasses == 1) { //Todo Remove else and make this an if
+//                    System.out.println("You made it to the second pass."); //Todo delete line
+                    //check if first word in line is an instruction
+                    if (isInstruction(fileInput[1])) {
+                        for(String word : fileInput) {
+                            System.out.print(word + " ");
+                        }
+                        System.out.println();
+                    }
+                //check if it is the third or more pass.
+                } else { //Todo remove else
+                    System.out.println("You made it to a third pass in error");
+                    System.exit(1);
+                }
+            }
+            fileReader.close();
+            numberOfFilePasses++;
         }
-        fileReader.close();
 
-//        SYMBOL_TABLE.forEach((k,v)->System.out.println("Item : " + k + " Count : " + v));
-
-        for (Map.Entry<String, Integer> entry : SYMBOL_TABLE.entrySet()) {
-            System.out.println("Item : " + entry.getKey() + " Count : " + entry.getValue());
-        }
+        SYMBOL_TABLE.forEach((k,v)->System.out.println("Item : " + k + " Count : " + v));
+        System.out.println(PC);
+//TODO delete code block
+//        for (Map.Entry<String, Integer> entry : SYMBOL_TABLE.entrySet()) {
+//            System.out.println("Item : " + entry.getKey() + " Count : " + entry.getValue());
+//        }
 
     }
 
 
-    private static boolean isLabel (String valueToCheck) {
+    private static boolean isInstruction (String valueToCheck) {
         for (String instruction : INSTRUCTIONS) {
             if (valueToCheck.toUpperCase().equals(instruction)) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
-    private static void addToSymbolTable(String[] label) {
-        String directive = label[1].toUpperCase();
+    private static void addToMemory(String[] lineToAdd){
+        //check second item if directive or instruction
+
+        //if directive add byte or char to memory
+
+        //if instruction and not a Trp add instruction and data in register and/or data from hash map (should take up 12 bytes)
+
+        //if trap add instruction and single register to memory a 4 bytes each (should take up 8 bytes)
+    }
+
+    private static void addToSymbolTable(String[] lineToCheck) {
+        String label = lineToCheck[0];
+        String directive = lineToCheck[1].toUpperCase();
         if(isChar(directive)) {
-            SYMBOL_TABLE.put(label[0], PC);
+            SYMBOL_TABLE.put(label, PC);
             PC += CHAR_SIZE;
 
         } else if (isInt(directive)) {
-            SYMBOL_TABLE.put(label[0], PC);
+            SYMBOL_TABLE.put(label, PC);
             PC += BYTE_SIZE;
         }
     }
