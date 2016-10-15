@@ -13,6 +13,8 @@ public class Main {
     final static int INSTRUCT_SIZE = 12;
     private final static List<String> INSTRUCTIONS = new ArrayList<>(Arrays.asList("JMP", "JMR", "BNZ", "BGT", "BLT", "BRZ", "MOV", "LDA", "STR", "LDR", "STB", "LDB", "ADD", "ADI", "SUB", "MUL", "DIV", "AND", "OR", "CMP", "TRP"));
     private final static String [] DIRECTIVES = new String [] {".INT", ".BYT"};
+    private final static String intString = ".INT";
+    private final static String bytString = ".BYT";
     private static int R0 = 0, R1 = 0, R2 = 0, R3 = 0, R4 = 0, R5 = 0, R6 = 0, R7 = 0, PC = 0;
     private static Map<String, Integer> SYMBOL_TABLE = new HashMap<>();
 
@@ -79,11 +81,11 @@ public class Main {
     }
 
     private static boolean isChar (String directive) {
-        return directive.equals(DIRECTIVES[1]);
+        return directive.equals(bytString);
     }
 
     private static boolean isInt (String directive) {
-        return directive.equals(DIRECTIVES[0]);
+        return directive.equals(intString);
     }
 }
 
