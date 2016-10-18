@@ -5,24 +5,24 @@ J     .BYT  'J'
 E     .BYT  'E'
 F     .BYT  'F'
 START LDB R3 J
-      TRP 3
-      LDB R3 E
-      TRP 3
-      LDB R3 F
-      TRP 3
-      TRP 3
-ADD   LDR R1 A1    ;ADD Step 3 R1
-      LDR R2 A2
-      ADD R1 R2
-      MOV R3 R1
-      TRP 1
-      LDR R3 SP
-      TRP 3
-      TRP 3
-      LDR R2 A3
-      ADD R1 R2
-      MOV R3 R1
-      TRP 1
-      LDR R3 SP
-      TRP 3
-      TRP 3
+     TRP 3 ;Testing Trap
+     LDB R3 E
+     TRP 3
+     LDB R3 F
+     TRP 3
+     TRAP  TRP 3
+     SADD  LDR R1 A1
+     LDR R2 A2
+     ADD R1 R2
+     MOV R3 R1
+     TRP 1
+     LDR R3 SP
+     TRP 3
+     TRP 3
+     LDR R2 A3
+     ADD R1 R2
+     MOV R3 R1
+     TRP 1
+SSUB  LDR R3 SP
+     TRP 3
+     TRP 3

@@ -8,22 +8,22 @@ import java.util.*;
 public class Main {
 
     private final static int MEM_SIZE = 100000;
-    private final static int CHAR_SIZE = 1;
-    private final static int BYTE_SIZE = 4;
-    final static int INSTRUCT_SIZE = 12;
+    private final static int BYTE_SIZE = 1;
+    private final static int INT_SIZE = 4;
+    private final static int TRAP_SIZE = 8;
+    private final static int INSTRUCT_SIZE = 12;
+    private static int MEM_LOCAL = 0;
+    private static int PC_SET = 0;
     private final static List<String> INSTRUCTIONS = new ArrayList<>(Arrays.asList("JMP", "JMR", "BNZ", "BGT", "BLT", "BRZ", "MOV", "LDA", "STR", "LDR", "STB", "LDB", "ADD", "ADI", "SUB", "MUL", "DIV", "AND", "OR", "CMP", "TRP"));
-//    private final static String [] DIRECTIVES = new String [] {".INT", ".BYT"};//Todo delete line
     private final static String intString = ".INT";
     private final static String bytString = ".BYT";
     private static int R0 = 0, R1 = 0, R2 = 0, R3 = 0, R4 = 0, R5 = 0, R6 = 0, R7 = 0, PC = 0;
     private static Map<String, Integer> SYMBOL_TABLE = new HashMap<>();
+    private static byte[] DATA = new byte[MEM_SIZE];
+    private static ByteBuffer BB = ByteBuffer.wrap(DATA);
 
     public static void main(String[] args) throws IOException {
         Scanner fileReader = null;
-        //Declare memory array
-        byte[] data = new byte[MEM_SIZE];
-        ByteBuffer bb = ByteBuffer.wrap(data);
-        bb.order(ByteOrder.nativeOrder());
 
         //check to see if the program was run with the command line argument
         if (args.length < 1) {
@@ -34,52 +34,59 @@ public class Main {
         //flag for number of passes
         int numberOfFilePasses = 0;
 
-        while(numberOfFilePasses < 2) {
+        while (numberOfFilePasses < 2) {
             //check to see if a scanner can be created using the file that was input
             try {
-                fileReader = new Scanner(new FileInputStream(args[0])).useDelimiter("\\n|;");
+                fileReader = new Scanner(new FileInputStream(args[0])).useDelimiter("\\n|\\r|;");
             } catch (FileNotFoundException x) {
                 System.out.println("ERROR: Unable to open file " + args[0]);
                 x.printStackTrace();
                 System.exit(0);   // TERMINATE THE PROGRAM
             }
-            //read each line from the file
-            while (fileReader.hasNextLine()) {
-                String[] fileInput = fileReader.nextLine().split("\\s+");
-                //check if it is the first pass
-                if(numberOfFilePasses == 0) {
+            //------------------------------
+            //check if it is the first pass
+            //------------------------------
+            if (numberOfFilePasses == 0) {
+                //read each line from the file
+                while (fileReader.hasNextLine()) {
+                    String[] fileInput = fileReader.nextLine().trim().split("\\s+");
                     if (!isInstruction(fileInput[0])) {
                         addToSymbolTable(fileInput);
                     }
-                //check if it is the second pass
-                } else if(numberOfFilePasses == 1) { //Todo Remove else and make this an if
-//                    System.out.println("You made it to the second pass."); //Todo delete line
-                    //check if first word in line is an instruction
-                    if (isInstruction(fileInput[1])) {
-                        for(String word : fileInput) {
+                }
+            //--------------------------------
+            //check if it is the second pass
+            //--------------------------------
+            } else if (numberOfFilePasses == 1) { //Todo Remove else and make this an if
+                while (fileReader.hasNextLine()) {
+                    String[] fileInput = fileReader.nextLine().replaceAll(";.*", " ").trim().split("\\s+");
+                    if (isInstruction(fileInput[0]) || isInstruction(fileInput[1])) {
+                        for (String word : fileInput) {
                             System.out.print(word + " ");
                         }
                         System.out.println();
                     }
-                //check if it is the third or more pass.
-                } else { //Todo remove else
-                    System.out.println("You made it to a third pass in error");
-                    System.exit(1);
                 }
+
+
+                //check if first word in line is an instruction
+                System.out.println("You made it to the second pass");
+                //check if it is the third or more pass.
+            } else { //Todo remove else
+                System.out.println("You made it to a third pass in error");
+                System.exit(1);
             }
             fileReader.close();
             numberOfFilePasses++;
         }
 
-        SYMBOL_TABLE.forEach((k,v)->System.out.println("Item : " + k + " Count : " + v));
+        SYMBOL_TABLE.forEach((k, v) -> System.out.println("Item : " + k + " Count : " + v));
         System.out.println(PC);
 //TODO delete code block
 //        for (Map.Entry<String, Integer> entry : SYMBOL_TABLE.entrySet()) {
 //            System.out.println("Item : " + entry.getKey() + " Count : " + entry.getValue());
 //        }
-
     }
-
 
     private static boolean isInstruction (String valueToCheck) {
         for (String instruction : INSTRUCTIONS) {
@@ -104,13 +111,35 @@ public class Main {
         String label = lineToCheck[0];
         String directive = lineToCheck[1].toUpperCase();
         if(isChar(directive)) {
-            SYMBOL_TABLE.put(label, PC);
-            PC += CHAR_SIZE;
+            SYMBOL_TABLE.put(label, MEM_LOCAL);
+            MEM_LOCAL += BYTE_SIZE;
 
         } else if (isInt(directive)) {
-            SYMBOL_TABLE.put(label, PC);
-            PC += BYTE_SIZE;
+            SYMBOL_TABLE.put(label, MEM_LOCAL);
+            MEM_LOCAL += INT_SIZE;
+        } else {
+            if (PC == 0) {
+                PC = MEM_LOCAL;
+            }
+
+            SYMBOL_TABLE.put(label, MEM_LOCAL);
+
+            if (lineToCheck.length == 2) {
+                MEM_LOCAL += TRAP_SIZE;
+            } else {
+                MEM_LOCAL += INSTRUCT_SIZE;
+            }
         }
+    }
+
+    private static void addCharOrBytToMem (String[] lineToCheck) {
+        String directive = lineToCheck[1].toUpperCase();
+        if(isChar(directive)) {
+
+        } else if (isInt(directive)) {
+
+        }
+
     }
 
     private static boolean isChar (String directive) {
