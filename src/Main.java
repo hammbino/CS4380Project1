@@ -2,25 +2,28 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Main {
 
-    private final static int MEM_SIZE = 100000;
+    private final static int MEM_SIZE = 10000;
     private final static int BYTE_SIZE = 1;
     private final static int INT_SIZE = 4;
     private final static int TRAP_SIZE = 8;
     private final static int INSTRUCT_SIZE = 12;
     private static int MEM_LOCAL = 0;
-    private static int PC_SET = 0;
+//    private static int PC_SET = 0;
     private final static List<String> INSTRUCTIONS = new ArrayList<>(Arrays.asList("JMP", "JMR", "BNZ", "BGT", "BLT", "BRZ", "MOV", "LDA", "STR", "LDR", "STB", "LDB", "ADD", "ADI", "SUB", "MUL", "DIV", "AND", "OR", "CMP", "TRP"));
-    private final static String intString = ".INT";
-    private final static String bytString = ".BYT";
-    private static int R0 = 0, R1 = 0, R2 = 0, R3 = 0, R4 = 0, R5 = 0, R6 = 0, R7 = 0, PC = 0;
+//    private final static String [] INSTRUCTIONS = new String[] {"JMP", "JMR", "BNZ", "BGT", "BLT", "BRZ", "MOV", "LDA", "STR", "LDR", "STB", "LDB", "ADD", "ADI", "SUB", "MUL", "DIV", "AND", "OR", "CMP", "TRP"};
+    private final static String INT_STRING = ".INT";
+    private final static String BYTE_STRING = ".BYT";
+    private static int [] REG= new int[9];
+    private final static List<String> REGISTERS = new ArrayList<>(Arrays.asList("RO", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"));
     private static Map<String, Integer> SYMBOL_TABLE = new HashMap<>();
     private static byte[] DATA = new byte[MEM_SIZE];
     private static ByteBuffer BB = ByteBuffer.wrap(DATA);
+    private static int END_PROGRAM;
 
     public static void main(String[] args) throws IOException {
         Scanner fileReader = null;
@@ -47,6 +50,7 @@ public class Main {
             //check if it is the first pass
             //------------------------------
             if (numberOfFilePasses == 0) {
+                System.out.println("You made it to the FIRST pass");
                 //read each line from the file
                 while (fileReader.hasNextLine()) {
                     String[] fileInput = fileReader.nextLine().trim().split("\\s+");
@@ -58,19 +62,36 @@ public class Main {
             //check if it is the second pass
             //--------------------------------
             } else if (numberOfFilePasses == 1) { //Todo Remove else and make this an if
+                System.out.println("You made it to the SECOND pass");
                 while (fileReader.hasNextLine()) {
-                    String[] fileInput = fileReader.nextLine().replaceAll(";.*", " ").trim().split("\\s+");
-                    if (isInstruction(fileInput[0]) || isInstruction(fileInput[1])) {
-                        for (String word : fileInput) {
-                            System.out.print(word + " ");
+                    String[] tokens = fileReader.nextLine().replaceAll(";.*", " ").trim().split("\\s+");
+                    if (SYMBOL_TABLE.containsKey(tokens[0])) {
+                        if( isInt(tokens[1])) {
+                            int toAdd = Integer.parseInt(tokens[2]);
+                            BB.putInt(toAdd);
+                        } else if (isByte(tokens[1])) {
+                            if(tokens[2].equals("'\\n'")) {
+                                char NL = (char) 10;
+                                BB.put((byte) NL);
+                            } else if(tokens[2] .equals("'space'")) {
+                                char SP = (char) 32;
+                                BB.put((byte) SP);
+                            } else {
+                                BB.put((byte) tokens[2].charAt(1));
+                            }
+                        } else if (isInstruction(tokens[1])) {
+                            //Method to add instructions
+                            addInstructToMem(tokens, 1);
                         }
-                        System.out.println();
+                    } else if (isInstruction(tokens[0])) {
+                        //Call method to add intructions
+                        addInstructToMem(tokens, 0);
                     }
                 }
 
-
-                //check if first word in line is an instruction
-                System.out.println("You made it to the second pass");
+//                String newData = new String(DATA, StandardCharsets.UTF_8);
+//                System.out.println(newData);
+//                System.out.println(DATA[0]);
                 //check if it is the third or more pass.
             } else { //Todo remove else
                 System.out.println("You made it to a third pass in error");
@@ -79,13 +100,138 @@ public class Main {
             fileReader.close();
             numberOfFilePasses++;
         }
+        //--------------------------------
+        //Virtual Machine
+        //--------------------------------
+        System.out.println(REG[8]);//TODO delete this line
+//        boolean running = true;
+        END_PROGRAM = BB.position();
+        while(REG[8] < END_PROGRAM) {
+            int readInstruction = BB.getInt(REG[8]);
+            REG[8] += INT_SIZE;
+            int instruct1 = BB.getInt(REG[8]);
+            REG[8] += INT_SIZE;
+            int instruct2;
+            String instructRun = INSTRUCTIONS.get(readInstruction);
+            switch (instructRun) {
+                case "ADD":
+                    instruct2 = BB.getInt(REG[8]);
+                    REG[8] += INT_SIZE;
+                    REG[instruct1] = REG[instruct1] + REG[instruct2];
+                    break;
+                case "LDB":
+                    instruct2 = (char) BB.getInt(REG[8]);
+                    REG[8] += INT_SIZE;
+                    REG[instruct1] = (int) DATA[instruct2];
+                    break;
+                case "TRP":
+                    switch (instruct1) {
+                        case 0:
+                            System.out.println("Closing Program! Trap 0 encountered");
+                            System.exit(0);
+                            break;
+                        case 1:
+                            //write integer to standard out
+                            int intOutput = REG[3];
+                            System.out.print(intOutput);
+                            break;
+                        case 2:
+                            //read an integer from standard in
+                            break;
+                        case 3:
+                            char charOutput = (char) REG[3];
+                            System.out.print(charOutput);
+                            break;
+                        case 4:
+                            //read character from standard in
+                            break;
+                        default:
+                            System.out.println("Incorrect value for trap command given: " + instruct1);
+                            break;
+                    }
+                    break;
+                case "LDR":
+                    instruct2 = (int) BB.getInt(REG[8]);
+                    REG[8] += INT_SIZE;
+                    int loadReg = BB.getInt(instruct2);
+                    REG[instruct1] = loadReg;
+                    break;
+                case "MOV":
+                    instruct2 = BB.getInt(REG[8]);
+                    REG[8] += INT_SIZE;
+                    REG[instruct1] = REG[instruct2];
+                    break;
+                default:
+                    System.out.println("Instruction does not exist: " + readInstruction);
+            }
+        }
+//        SYMBOL_TABLE.forEach((k, v) -> System.out.println("Item : " + k + " Count : " + v));
 
-        SYMBOL_TABLE.forEach((k, v) -> System.out.println("Item : " + k + " Count : " + v));
-        System.out.println(PC);
 //TODO delete code block
 //        for (Map.Entry<String, Integer> entry : SYMBOL_TABLE.entrySet()) {
 //            System.out.println("Item : " + entry.getKey() + " Count : " + entry.getValue());
 //        }
+    }
+
+    private static void addInstructToMem (String[] instruction, int offset) {
+//        int numInstructions = instruction.length;
+//        int item1 = 0;
+//        int item2 = 0;
+//        if (numInstructions > 2 && offset == 0) {
+//            item1 = Integer.parseInt(instruction[numInstructions - 1]);
+//            item2 = Integer.parseInt(instruction[numInstructions - 2]);
+//        } else {
+//            item1 = Integer.parseInt(instruction[numInstructions - 1]);
+//        }
+        //"JMP", "JMR", "BNZ", "BGT", "BLT", "BRZ", "MOV", "LDA", "STR", "LDR", "STB", "LDB", "ADD", "ADI", "SUB", "MUL", "DIV", "AND", "OR", "CMP", "TRP"
+        switch (instruction[offset]) {
+            case "ADD":
+                BB.putInt(INSTRUCTIONS.indexOf("ADD"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
+                break;
+            case "SUB":
+                BB.putInt(INSTRUCTIONS.indexOf("SUB"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
+                break;
+            case "MUL":
+                BB.putInt(INSTRUCTIONS.indexOf("MUL"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
+                break;
+            case "DIV":
+                BB.putInt(INSTRUCTIONS.indexOf("DIV"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
+                break;
+            case "LDB":
+                int bytForReg = SYMBOL_TABLE.get(instruction[2 + offset]);
+                BB.putInt(INSTRUCTIONS.indexOf("LDB"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(bytForReg);
+                break;
+            case "TRP":
+                int trpValue = Integer.parseInt(instruction[1 + offset]);
+                BB.putInt(INSTRUCTIONS.indexOf("TRP"));
+                BB.putInt(trpValue);
+                break;
+            case "LDR":
+                int valForReg = SYMBOL_TABLE.get(instruction[2 + offset]);
+                BB.putInt(INSTRUCTIONS.indexOf("LDR"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(valForReg);
+                break;
+            case "MOV":
+                BB.putInt(INSTRUCTIONS.indexOf("MOV"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
+                break;
+            default:
+                System.out.println("Instruction does not exist: " + instruction[offset]);
+                break;
+        }
+
     }
 
     private static boolean isInstruction (String valueToCheck) {
@@ -97,20 +243,19 @@ public class Main {
         return false;
     }
 
-    private static void addToMemory(String[] lineToAdd){
-        //check second item if directive or instruction
-
-        //if directive add byte or char to memory
-
-        //if instruction and not a Trp add instruction and data in register and/or data from hash map (should take up 12 bytes)
-
-        //if trap add instruction and single register to memory a 4 bytes each (should take up 8 bytes)
-    }
+//    private static void addToMemory(String[] lineToAdd){
+//
+//        //if directive add byte or char to memory
+//
+//        //if instruction and not a Trp add instruction and data in register and/or data from hash map (should take up 12 bytes)
+//
+//        //if trap add instruction and single register to memory a 4 bytes each (should take up 8 bytes)
+//    }
 
     private static void addToSymbolTable(String[] lineToCheck) {
         String label = lineToCheck[0];
         String directive = lineToCheck[1].toUpperCase();
-        if(isChar(directive)) {
+        if(isByte(directive)) {
             SYMBOL_TABLE.put(label, MEM_LOCAL);
             MEM_LOCAL += BYTE_SIZE;
 
@@ -118,8 +263,8 @@ public class Main {
             SYMBOL_TABLE.put(label, MEM_LOCAL);
             MEM_LOCAL += INT_SIZE;
         } else {
-            if (PC == 0) {
-                PC = MEM_LOCAL;
+            if (REG[8] == 0) {
+                REG[8] = MEM_LOCAL;
             }
 
             SYMBOL_TABLE.put(label, MEM_LOCAL);
@@ -132,26 +277,24 @@ public class Main {
         }
     }
 
-    private static void addCharOrBytToMem (String[] lineToCheck) {
-        String directive = lineToCheck[1].toUpperCase();
-        if(isChar(directive)) {
+//    private static void addCharOrBytToMem (String[] lineToCheck) {
+//        String directive = lineToCheck[1].toUpperCase();
+//        if(isByte(directive)) {
+//
+//        } else if (isInt(directive)) {
+//
+//        }
+//
+//    }
 
-        } else if (isInt(directive)) {
-
-        }
-
-    }
-
-    private static boolean isChar (String directive) {
-        return directive.equals(bytString);
+    private static boolean isByte (String directive) {
+        return directive.equals(BYTE_STRING);
     }
 
     private static boolean isInt (String directive) {
-        return directive.equals(intString);
+        return directive.equals(INT_STRING);
     }
 }
-
-
 
 
 //        char a = 'a';

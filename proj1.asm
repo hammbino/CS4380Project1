@@ -27,7 +27,7 @@ O     .BYT  'O'
 N     .BYT  'N'
 D     .BYT  'D'
 NL    .BYT  '\n'
-SP    .BYT  '\s'
+SP    .BYT  'space'
 START LDB R3 H
       TRP 3
       LDB R3 A
@@ -43,6 +43,8 @@ START LDB R3 H
       TRP 3
       LDB R3 COM
       TRP 3
+      LDB R3 SP
+      TRP 3
       LDB R3 J
       TRP 3
       LDB R3 E
@@ -54,9 +56,9 @@ START LDB R3 H
       TRP 3
       LDB R3 E
       TRP 3
-      LDR R3 Y
+      LDB R3 Y
       TRP 3
-      LDR R3 NL
+      LDB R3 NL
       TRP 3
       TRP 3
       LDR R1 B1    ;ADD Step 3 R1
@@ -64,35 +66,35 @@ START LDB R3 H
       ADD R1 R2
       MOV R3 R1
       TRP 1
-      LDR R3 SP
+      LDB R3 SP
       TRP 3
       TRP 3
       LDR R2 B3
       ADD R1 R2
       MOV R3 R1
       TRP 1
-      LDR R3 SP
+      LDB R3 SP
       TRP 3
       TRP 3
       LDR R2 B4
       ADD R1 R2
       MOV R3 R1
       TRP 1
-      LDR R3 SP
+      LDB R3 SP
       TRP 3
       TRP 3
       LDR R2 B5
       ADD R1 R2
       MOV R3 R1
       TRP 1
-      LDR R3 SP
+      LDB R3 SP
       TRP 3
       TRP 3
       LDR R2 B6
       ADD R1 R2
       MOV R3 R1
       TRP 1
-      LDR R3 NL
+      LDB R3 NL
       TRP 3
       TRP 3
       LDR R4 A1  ;MUL Step 5 R4
@@ -100,84 +102,84 @@ START LDB R3 H
       MUL R4 R2
       MOV R3 R4
       TRP 1
-      LDR R3 SP
+      LDB R3 SP
       TRP 3
       TRP 3
       LDR R2 A3
       MUL R4 R2
       MOV R3 R4
       TRP 1
-      LDR R3 SP
+      LDB R3 SP
       TRP 3
       TRP 3
       LDR R2 A4
       MUL R4 R2
       MOV R3 R4
       TRP 1
-      LDR R3 SP
+      LDB R3 SP
       TRP 3
       TRP 3
       LDR R2 A5
       MUL R4 R2
       MOV R3 R4
       TRP 1
-      LDR R3 SP
+      LDB R3 SP
       TRP 3
       TRP 3
       LDR R2 A6
       MUL R4 R2
       MOV R3 R4
       TRP 1
-      LDR R3 NL
+      LDB R3 NL
       TRP 3
       TRP 3
       MOV R3 R1    ;DIV
       LDR R2 C1
       DIV R3 R2
       TRP 1
-      LDR R3 SP
+      LDB R3 SP
       TRP 3
       TRP 3
       MOV R3 R1
       LDR R2 C2
       DIV R3 R2
       TRP 1
-      LDR R3 SP
+      LDB R3 SP
       TRP 3
       TRP 3
       MOV R3 R1
       LDR R2 C3
       DIV R3 R2
       TRP 1
-      LDR R3 SP
+      LDB R3 SP
       TRP 3
       TRP 3
       MOV R3 R1
       LDR R2 C4
       DIV R3 R2
       TRP 1
-      LDR R3 NL
+      LDB R3 NL
       TRP 3
       TRP 3
       MOV R3 R4    ;SUB
       LDR R2 C1
       SUB R3 R2
       TRP 1
-      LDR R3 SP
+      LDB R3 SP
       TRP 3
       TRP 3
       MOV R3 R4
       LDR R2 C2
       SUB R3 R2
       TRP 1
-      LDR R3 SP
+      LDB R3 SP
       TRP 3
       TRP 3
       MOV R3 R4
       LDR R2 C3
       SUB R3 R2
       TRP 1
-      LDR R3 SP
+      LDB R3 SP
       TRP 3
       TRP 3
       MOV R3 R4
