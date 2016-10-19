@@ -58,10 +58,11 @@ public class Main {
                         addToSymbolTable(fileInput);
                     }
                 }
+            }
             //--------------------------------
             //check if it is the second pass
             //--------------------------------
-            } else if (numberOfFilePasses == 1) { //Todo Remove else and make this an if
+            if (numberOfFilePasses == 1) {
                 System.out.println("You made it to the SECOND pass");
                 while (fileReader.hasNextLine()) {
                     String[] tokens = fileReader.nextLine().replaceAll(";.*", " ").trim().split("\\s+");
@@ -70,15 +71,28 @@ public class Main {
                             int toAdd = Integer.parseInt(tokens[2]);
                             BB.putInt(toAdd);
                         } else if (isByte(tokens[1])) {
-                            if(tokens[2].equals("'\\n'")) {
-                                char NL = (char) 10;
-                                BB.put((byte) NL);
-                            } else if(tokens[2] .equals("'space'")) {
-                                char SP = (char) 32;
-                                BB.put((byte) SP);
-                            } else {
-                                BB.put((byte) tokens[2].charAt(1));
+                            switch (tokens[2]) {
+                                case "'\\n'":
+                                    char NL = (char) 10;
+                                    BB.put((byte) NL);
+                                    break;
+                                case "'space'":
+                                    char SP = (char) 32;
+                                    BB.put((byte) SP);
+                                    break;
+                                default:
+                                    BB.put((byte) tokens[2].charAt(1));
                             }
+//
+//                            if(tokens[2].equals("'\\n'")) {
+//                                char NL = (char) 10;
+//                                BB.put((byte) NL);
+//                            } else if(tokens[2] .equals("'space'")) {
+//                                char SP = (char) 32;
+//                                BB.put((byte) SP);
+//                            } else {
+//                                BB.put((byte) tokens[2].charAt(1));
+//                            }
                         } else if (isInstruction(tokens[1])) {
                             //Method to add instructions
                             addInstructToMem(tokens, 1);
@@ -88,14 +102,6 @@ public class Main {
                         addInstructToMem(tokens, 0);
                     }
                 }
-
-//                String newData = new String(DATA, StandardCharsets.UTF_8);
-//                System.out.println(newData);
-//                System.out.println(DATA[0]);
-                //check if it is the third or more pass.
-            } else { //Todo remove else
-                System.out.println("You made it to a third pass in error");
-                System.exit(1);
             }
             fileReader.close();
             numberOfFilePasses++;
@@ -103,8 +109,6 @@ public class Main {
         //--------------------------------
         //Virtual Machine
         //--------------------------------
-        System.out.println(REG[8]);//TODO delete this line
-//        boolean running = true;
         END_PROGRAM = BB.position();
         while(REG[8] < END_PROGRAM) {
             int readInstruction = BB.getInt(REG[8]);
@@ -166,7 +170,7 @@ public class Main {
                     }
                     break;
                 case "LDR":
-                    instruct2 = (int) BB.getInt(REG[8]);
+                    instruct2 = BB.getInt(REG[8]);
                     REG[8] += INT_SIZE;
                     int loadReg = BB.getInt(instruct2);
                     REG[instruct1] = loadReg;
@@ -180,25 +184,9 @@ public class Main {
                     System.out.println("Instruction does not exist: " + readInstruction);
             }
         }
-//        SYMBOL_TABLE.forEach((k, v) -> System.out.println("Item : " + k + " Count : " + v));
-
-//TODO delete code block
-//        for (Map.Entry<String, Integer> entry : SYMBOL_TABLE.entrySet()) {
-//            System.out.println("Item : " + entry.getKey() + " Count : " + entry.getValue());
-//        }
     }
 
     private static void addInstructToMem (String[] instruction, int offset) {
-//        int numInstructions = instruction.length;
-//        int item1 = 0;
-//        int item2 = 0;
-//        if (numInstructions > 2 && offset == 0) {
-//            item1 = Integer.parseInt(instruction[numInstructions - 1]);
-//            item2 = Integer.parseInt(instruction[numInstructions - 2]);
-//        } else {
-//            item1 = Integer.parseInt(instruction[numInstructions - 1]);
-//        }
-        //"JMP", "JMR", "BNZ", "BGT", "BLT", "BRZ", "MOV", "LDA", "STR", "LDR", "STB", "LDB", "ADD", "ADI", "SUB", "MUL", "DIV", "AND", "OR", "CMP", "TRP"
         switch (instruction[offset]) {
             case "ADD":
                 BB.putInt(INSTRUCTIONS.indexOf("ADD"));
@@ -258,15 +246,6 @@ public class Main {
         return false;
     }
 
-//    private static void addToMemory(String[] lineToAdd){
-//
-//        //if directive add byte or char to memory
-//
-//        //if instruction and not a Trp add instruction and data in register and/or data from hash map (should take up 12 bytes)
-//
-//        //if trap add instruction and single register to memory a 4 bytes each (should take up 8 bytes)
-//    }
-
     private static void addToSymbolTable(String[] lineToCheck) {
         String label = lineToCheck[0];
         String directive = lineToCheck[1].toUpperCase();
@@ -284,7 +263,7 @@ public class Main {
 
             SYMBOL_TABLE.put(label, MEM_LOCAL);
 
-            if (lineToCheck.length == 2) {
+            if (lineToCheck[0].equals("TRP") || lineToCheck[1].equals("TRP") && lineToCheck.length <= 3) {
                 MEM_LOCAL += TRAP_SIZE;
             } else {
                 MEM_LOCAL += INSTRUCT_SIZE;

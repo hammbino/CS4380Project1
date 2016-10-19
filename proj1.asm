@@ -61,7 +61,7 @@ START LDB R3 H
       LDB R3 NL
       TRP 3
       TRP 3
-      LDR R1 B1    ;ADD Step 3 R1
+      LDR R1 B1    ;ADD all the elements of list B togehter Part 3
       LDR R2 B2
       ADD R1 R2
       MOV R3 R1
@@ -92,12 +92,12 @@ START LDB R3 H
       TRP 3
       LDR R2 B6
       ADD R1 R2
-      MOV R3 R1
+      MOV R3 R1  ;Final ADD result is in R1 for Part 3
       TRP 1
-      LDB R3 NL
+      LDB R3 NL  ;Print a blank line Part 4
       TRP 3
       TRP 3
-      LDR R4 A1  ;MUL Step 5 R4
+      LDR R4 A1  ;MUL all the elements of list A together Part 5
       LDR R2 A2
       MUL R4 R2
       MOV R3 R4
@@ -128,40 +128,54 @@ START LDB R3 H
       TRP 3
       LDR R2 A6
       MUL R4 R2
-      MOV R3 R4
+      MOV R3 R4   ;Final MUL result in R4 for Part 5
       TRP 1
-      LDB R3 NL
+      LDB R3 NL   ;Print a blank line Part 6
       TRP 3
       TRP 3
-      MOV R3 R1    ;DIV
-      LDR R2 C1
+      MOV R3 R1   ;DIV the final result from Part 3 by each element in list B Part 7
+      LDR R2 B1
       DIV R3 R2
       TRP 1
       LDB R3 SP
       TRP 3
       TRP 3
       MOV R3 R1
-      LDR R2 C2
+      LDR R2 B2
       DIV R3 R2
       TRP 1
       LDB R3 SP
       TRP 3
       TRP 3
       MOV R3 R1
-      LDR R2 C3
+      LDR R2 B3
       DIV R3 R2
       TRP 1
       LDB R3 SP
       TRP 3
       TRP 3
       MOV R3 R1
-      LDR R2 C4
+      LDR R2 B4
       DIV R3 R2
       TRP 1
-      LDB R3 NL
+      LDB R3 SP
       TRP 3
       TRP 3
-      MOV R3 R4    ;SUB
+      MOV R3 R1
+      LDR R2 B5
+      DIV R3 R2
+      TRP 1
+      LDB R3 SP
+      TRP 3
+      TRP 3
+      MOV R3 R1
+      LDR R2 B6
+      DIV R3 R2
+      TRP 1
+      LDB R3 NL   ;Print a blank line Part 8
+      TRP 3
+      TRP 3
+      MOV R3 R4   ;SUB from the final result of Part 5 each element of list C Part 9
       LDR R2 C1
       SUB R3 R2
       TRP 1
