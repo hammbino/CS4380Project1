@@ -23,7 +23,6 @@ public class Main {
     private static Map<String, Integer> SYMBOL_TABLE = new HashMap<>();
     private static byte[] DATA = new byte[MEM_SIZE];
     private static ByteBuffer BB = ByteBuffer.wrap(DATA);
-    private static int END_PROGRAM;
 
     public static void main(String[] args) throws IOException {
         Scanner fileReader = null;
@@ -83,16 +82,6 @@ public class Main {
                                 default:
                                     BB.put((byte) tokens[2].charAt(1));
                             }
-//
-//                            if(tokens[2].equals("'\\n'")) {
-//                                char NL = (char) 10;
-//                                BB.put((byte) NL);
-//                            } else if(tokens[2] .equals("'space'")) {
-//                                char SP = (char) 32;
-//                                BB.put((byte) SP);
-//                            } else {
-//                                BB.put((byte) tokens[2].charAt(1));
-//                            }
                         } else if (isInstruction(tokens[1])) {
                             //Method to add instructions
                             addInstructToMem(tokens, 1);
@@ -109,8 +98,8 @@ public class Main {
         //--------------------------------
         //Virtual Machine
         //--------------------------------
-        END_PROGRAM = BB.position();
-        while(REG[8] < END_PROGRAM) {
+        int endProgram = BB.position();
+        while(REG[8] < endProgram) {
             int readInstruction = BB.getInt(REG[8]);
             REG[8] += INT_SIZE;
             int instruct1 = BB.getInt(REG[8]);
@@ -271,16 +260,6 @@ public class Main {
         }
     }
 
-//    private static void addCharOrBytToMem (String[] lineToCheck) {
-//        String directive = lineToCheck[1].toUpperCase();
-//        if(isByte(directive)) {
-//
-//        } else if (isInt(directive)) {
-//
-//        }
-//
-//    }
-
     private static boolean isByte (String directive) {
         return directive.equals(BYTE_STRING);
     }
@@ -289,54 +268,3 @@ public class Main {
         return directive.equals(INT_STRING);
     }
 }
-
-
-//        char a = 'a';
-//        char b = 'b';
-//        char c = 'c';
-//        char z = 'z';
-//
-//        int one = 1;
-//        int two = 2;
-//        int oneHundred = 100;
-//        int oneTwentyEight = 128;
-//        int twoFiftySix = 256;
-//        int twoFiftySeven = 257;
-//
-//        bb.put((byte) a);
-//        bb.put((byte) b);
-//        bb.put((byte) c);
-//        bb.put((byte) z);
-//        bb.putInt(one);
-//        bb.putInt(two);
-//        bb.putInt(oneHundred);
-//        bb.putInt(oneTwentyEight);
-//        bb.putInt(twoFiftySix);
-//        bb.putInt(twoFiftySeven);
-//
-//
-//        System.out.println((char) bb.get(0));
-//        System.out.println((char) bb.get(1));
-//        System.out.println((char) bb.get(2));
-//        System.out.println((char) bb.get(3));
-//        System.out.println(bb.getInt(4));
-//        System.out.println(bb.getInt(8));
-//        System.out.println(bb.getInt(12));
-//        System.out.println(bb.getInt(16));
-//        System.out.println(bb.getInt(20));
-//        System.out.println(bb.getInt(24));
-//    }
-//
-//    private static byte[] addIntToByteArray (int i) {
-//        final ByteBuffer bb = ByteBuffer.allocate(Integer.SIZE / Byte.SIZE);
-//        bb.order(ByteOrder.LITTLE_ENDIAN);
-//        bb.putInt(i);
-//        return bb.array();
-//    }
-//
-//    public static int getIntFromByteArray (byte[] b) {
-//        final ByteBuffer bb = ByteBuffer.wrap(b);
-//        bb.order(ByteOrder.LITTLE_ENDIAN);
-//        return bb.getInt();
-//    }
-//}
