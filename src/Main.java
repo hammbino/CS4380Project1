@@ -20,6 +20,7 @@ public class Main {
     private final static String BYTE_STRING = ".BYT";
     private static int [] REG= new int[9];
     private final static List<String> REGISTERS = new ArrayList<>(Arrays.asList("RO", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"));
+//    private static enum REGISTERS {RO, R1, R2, R3, R4, R5, R6, R7, R8}
     private static Map<String, Integer> SYMBOL_TABLE = new HashMap<>();
     private static byte[] DATA = new byte[MEM_SIZE];
     private static ByteBuffer BB = ByteBuffer.wrap(DATA);
@@ -174,7 +175,7 @@ public class Main {
             }
         }
     }
-
+    //Method to add instruction to memory
     private static void addInstructToMem (String[] instruction, int offset) {
         switch (instruction[offset]) {
             case "ADD":
@@ -225,7 +226,7 @@ public class Main {
         }
 
     }
-
+    //Checks if string is an instruction, if not an instruction then a label
     private static boolean isInstruction (String valueToCheck) {
         for (String instruction : INSTRUCTIONS) {
             if (valueToCheck.toUpperCase().equals(instruction)) {
@@ -234,7 +235,7 @@ public class Main {
         }
         return false;
     }
-
+    //Add label and location to symbol table
     private static void addToSymbolTable(String[] lineToCheck) {
         String label = lineToCheck[0];
         String directive = lineToCheck[1].toUpperCase();
@@ -259,11 +260,11 @@ public class Main {
             }
         }
     }
-
+    //check if directive is a byte
     private static boolean isByte (String directive) {
         return directive.equals(BYTE_STRING);
     }
-
+    //check if directive is an int
     private static boolean isInt (String directive) {
         return directive.equals(INT_STRING);
     }
