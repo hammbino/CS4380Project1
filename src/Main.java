@@ -119,6 +119,21 @@ public class Main {
                     REG[8] += INT_SIZE;
                     REG[instruct1] = REG[instruct1] + REG[instruct2];
                     break;
+                case "SUB":
+                    instruct2 = BB.getInt(REG[8]);
+                    REG[8] += INT_SIZE;
+                    REG[instruct1] = REG[instruct1] - REG[instruct2];
+                    break;
+                case "MUL":
+                    instruct2 = BB.getInt(REG[8]);
+                    REG[8] += INT_SIZE;
+                    REG[instruct1] = REG[instruct1] * REG[instruct2];
+                    break;
+                case "DIV":
+                    instruct2 = BB.getInt(REG[8]);
+                    REG[8] += INT_SIZE;
+                    REG[instruct1] = REG[instruct1] / REG[instruct2];
+                    break;
                 case "LDB":
                     instruct2 = (char) BB.getInt(REG[8]);
                     REG[8] += INT_SIZE;
