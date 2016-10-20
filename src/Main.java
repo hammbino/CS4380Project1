@@ -2,7 +2,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Main {
@@ -13,17 +12,15 @@ public class Main {
     private final static int TRAP_SIZE = 8;
     private final static int INSTRUCT_SIZE = 12;
     private static int MEM_LOCAL = 0;
-//    private static int PC_SET = 0;
     private final static List<String> INSTRUCTIONS = new ArrayList<>(Arrays.asList("JMP", "JMR", "BNZ", "BGT", "BLT", "BRZ", "MOV", "LDA", "STR", "LDR", "STB", "LDB", "ADD", "ADI", "SUB", "MUL", "DIV", "AND", "OR", "CMP", "TRP"));
-//    private final static String [] INSTRUCTIONS = new String[] {"JMP", "JMR", "BNZ", "BGT", "BLT", "BRZ", "MOV", "LDA", "STR", "LDR", "STB", "LDB", "ADD", "ADI", "SUB", "MUL", "DIV", "AND", "OR", "CMP", "TRP"};
     private final static String INT_STRING = ".INT";
     private final static String BYTE_STRING = ".BYT";
     private static int [] REG= new int[9];
     private final static List<String> REGISTERS = new ArrayList<>(Arrays.asList("RO", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"));
-//    private static enum REGISTERS {RO, R1, R2, R3, R4, R5, R6, R7, R8}
     private static Map<String, Integer> SYMBOL_TABLE = new HashMap<>();
     private static byte[] DATA = new byte[MEM_SIZE];
     private static ByteBuffer BB = ByteBuffer.wrap(DATA);
+    private static int numberOfFilePasses = 0;
 
     public static void main(String[] args) throws IOException {
         Scanner fileReader = null;
@@ -33,9 +30,6 @@ public class Main {
             System.out.println("Error: No file was provided.");
             System.exit(0);     // TERMINATE THE PROGRAM
         }
-
-        //flag for number of passes
-        int numberOfFilePasses = 0;
 
         while (numberOfFilePasses < 2) {
             //check to see if a scanner can be created using the file that was input
@@ -50,7 +44,6 @@ public class Main {
             //check if it is the first pass
             //------------------------------
             if (numberOfFilePasses == 0) {
-                System.out.println("You made it to the FIRST pass");
                 //read each line from the file
                 while (fileReader.hasNextLine()) {
                     String[] fileInput = fileReader.nextLine().trim().split("\\s+");
@@ -63,7 +56,6 @@ public class Main {
             //check if it is the second pass
             //--------------------------------
             if (numberOfFilePasses == 1) {
-                System.out.println("You made it to the SECOND pass");
                 while (fileReader.hasNextLine()) {
                     String[] tokens = fileReader.nextLine().replaceAll(";.*", " ").trim().split("\\s+");
                     if (SYMBOL_TABLE.containsKey(tokens[0])) {
@@ -88,7 +80,7 @@ public class Main {
                             addInstructToMem(tokens, 1);
                         }
                     } else if (isInstruction(tokens[0])) {
-                        //Call method to add intructions
+                        //Call method to add instructions
                         addInstructToMem(tokens, 0);
                     }
                 }
@@ -235,10 +227,19 @@ public class Main {
         }
         return false;
     }
+    //Checks if the label already exists
+    private static boolean inSymTable (String valueToCheck) {
+        return (SYMBOL_TABLE.containsKey(valueToCheck.toUpperCase()));
+    }
+
     //Add label and location to symbol table
     private static void addToSymbolTable(String[] lineToCheck) {
         String label = lineToCheck[0];
         String directive = lineToCheck[1].toUpperCase();
+        if (inSymTable(label) && numberOfFilePasses == 0) {
+            System.out.println("ERROR: label has already been used: " + label);
+            System.exit(0);   // TERMINATE THE PROGRAM
+        }
         if(isByte(directive)) {
             SYMBOL_TABLE.put(label, MEM_LOCAL);
             MEM_LOCAL += BYTE_SIZE;

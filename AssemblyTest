@@ -19,7 +19,7 @@ TRAP  TRP 3
      LDR R2 A2
      ADD R1 R2
      MOV R3 R1
-TRAP TRP 1 ;Print 3
+     TRP 1 ;Print 3
      LDB R3 NL
      TRP 3 ;Print NL
      TRP 3 ;Print NL
@@ -27,6 +27,5 @@ TRAP TRP 1 ;Print 3
      ADD R1 R2
      MOV R3 R1
      TRP 1   ;Print 6
-SSUB  LDB R3 NL
-     TRP 3   ;Print NL
+SSUB LDB R3 NL
      TRP 3   ;Print NL

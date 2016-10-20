@@ -200,3 +200,5 @@ START LDB R3 H
       LDR R2 C4
       SUB R3 R2
       TRP 1
+      LDB R3 NL
+      TRP 3
