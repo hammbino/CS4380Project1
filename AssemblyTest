@@ -29,3 +29,4 @@ TRAP  TRP 3
      TRP 1   ;Print 6
 SSUB LDB R3 NL
      TRP 3   ;Print NL
+     TRP 0

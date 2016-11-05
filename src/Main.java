@@ -100,10 +100,44 @@ public class Main {
             int instruct2;
             String instructRun = INSTRUCTIONS.get(readInstruction);
             switch (instructRun) {
+                case "JMR":
+                    break;
+                case "BNZ":
+                    break;
+                case "BGT":
+                    break;
+                case "BLT":
+                    break;
+                case "BRZ":
+                    break;
+                case "MOV":
+                    instruct2 = BB.getInt(REG[8]);
+                    REG[8] += INT_SIZE;
+                    REG[instruct1] = REG[instruct2];
+                    break;
+                case "LDA":
+                    break;
+                case "STR":
+                    break;
+                case "LDR":
+                    instruct2 = BB.getInt(REG[8]);
+                    REG[8] += INT_SIZE;
+                    int loadReg = BB.getInt(instruct2);
+                    REG[instruct1] = loadReg;
+                    break;
+                case "STB":
+                    break;
+                case "LDB":
+                    instruct2 = (char) BB.getInt(REG[8]);
+                    REG[8] += INT_SIZE;
+                    REG[instruct1] = (int) DATA[instruct2];
+                    break;
                 case "ADD":
                     instruct2 = BB.getInt(REG[8]);
                     REG[8] += INT_SIZE;
                     REG[instruct1] = REG[instruct1] + REG[instruct2];
+                    break;
+                case "ADI":
                     break;
                 case "SUB":
                     instruct2 = BB.getInt(REG[8]);
@@ -120,10 +154,11 @@ public class Main {
                     REG[8] += INT_SIZE;
                     REG[instruct1] = REG[instruct1] / REG[instruct2];
                     break;
-                case "LDB":
-                    instruct2 = (char) BB.getInt(REG[8]);
-                    REG[8] += INT_SIZE;
-                    REG[instruct1] = (int) DATA[instruct2];
+                case "AND":
+                    break;
+                case "OR":
+                    break;
+                case "CMP":
                     break;
                 case "TRP":
                     switch (instruct1) {
@@ -151,17 +186,6 @@ public class Main {
                             break;
                     }
                     break;
-                case "LDR":
-                    instruct2 = BB.getInt(REG[8]);
-                    REG[8] += INT_SIZE;
-                    int loadReg = BB.getInt(instruct2);
-                    REG[instruct1] = loadReg;
-                    break;
-                case "MOV":
-                    instruct2 = BB.getInt(REG[8]);
-                    REG[8] += INT_SIZE;
-                    REG[instruct1] = REG[instruct2];
-                    break;
                 default:
                     System.out.println("Instruction does not exist: " + readInstruction);
             }
@@ -170,10 +194,45 @@ public class Main {
     //Method to add instruction to memory
     private static void addInstructToMem (String[] instruction, int offset) {
         switch (instruction[offset]) {
+            case "JMR":
+                break;
+            case "BNZ":
+                break;
+            case "BGT":
+                break;
+            case "BLT":
+                break;
+            case "BRZ":
+                break;
+            case "MOV":
+                BB.putInt(INSTRUCTIONS.indexOf("MOV"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
+                break;
+            case "LDA":
+                break;
+            case "STR":
+                break;
+            case "LDR":
+                int valForReg = SYMBOL_TABLE.get(instruction[2 + offset]);
+                BB.putInt(INSTRUCTIONS.indexOf("LDR"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(valForReg);
+                break;
+            case "STB":
+                break;
+            case "LDB":
+                int bytForReg = SYMBOL_TABLE.get(instruction[2 + offset]);
+                BB.putInt(INSTRUCTIONS.indexOf("LDB"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(bytForReg);
+                break;
             case "ADD":
                 BB.putInt(INSTRUCTIONS.indexOf("ADD"));
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
+                break;
+            case "ADI":
                 break;
             case "SUB":
                 BB.putInt(INSTRUCTIONS.indexOf("SUB"));
@@ -190,27 +249,16 @@ public class Main {
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
                 break;
-            case "LDB":
-                int bytForReg = SYMBOL_TABLE.get(instruction[2 + offset]);
-                BB.putInt(INSTRUCTIONS.indexOf("LDB"));
-                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
-                BB.putInt(bytForReg);
+            case "AND":
+                break;
+            case "OR":
+                break;
+            case "CMP":
                 break;
             case "TRP":
                 int trpValue = Integer.parseInt(instruction[1 + offset]);
                 BB.putInt(INSTRUCTIONS.indexOf("TRP"));
                 BB.putInt(trpValue);
-                break;
-            case "LDR":
-                int valForReg = SYMBOL_TABLE.get(instruction[2 + offset]);
-                BB.putInt(INSTRUCTIONS.indexOf("LDR"));
-                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
-                BB.putInt(valForReg);
-                break;
-            case "MOV":
-                BB.putInt(INSTRUCTIONS.indexOf("MOV"));
-                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
-                BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
                 break;
             default:
                 System.out.println("Instruction does not exist: " + instruction[offset]);
