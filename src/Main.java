@@ -204,17 +204,31 @@ public class Main {
                     REG[instruct1] = REG[instruct1] / REG[instruct2];
                     break;
                 case "AND":
+                    instruct2 = BB.getInt(PC);
+                    PC += INT_SIZE;
+                    if (REG[instruct1] > 0 && REG[instruct2] > 0) {
+                        REG[instruct1] = 1;
+                    } else {
+                        REG[instruct1] = 1;
+                    }
                     break;
                 case "OR":
+                    instruct2 = BB.getInt(PC);
+                    PC += INT_SIZE;
+                    if (REG[instruct1] > 0 || REG[instruct2] > 0) {
+                        REG[instruct1] = 1;
+                    } else {
+                        REG[instruct1] = 1;
+                    }
                     break;
                 case "CMP":
                     instruct2 = BB.getInt(PC);
                     PC += INT_SIZE;
                     if(REG[instruct1] == REG[instruct2])
                         REG[instruct1] = 0;
-                    else if(instruct1 > instruct2)
+                    else if(REG[instruct1] > REG[instruct2])
                         REG[instruct1] = 1;
-                    else if(instruct1 < instruct2)
+                    else if(REG[instruct1] < REG[instruct2])
                         REG[instruct1] = -1;
                     break;
                 case "TRP":
