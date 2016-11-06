@@ -12,22 +12,22 @@ START LDB R3 J
      TRP 3
      LDB R3 F
      TRP 3
-TRAP  TRP 3
-     LDB R3 NL
-     TRP 3
-     LDR R1 A1
-     LDR R2 A2
-     ADD R1 R2
-     MOV R3 R1
-     TRP 1 ;Print 3
-     LDB R3 NL
-     TRP 3 ;Print NL
-     LDR R2 A3
-     ADD R1 R2
-     MOV R3 R1
-     TRP 1   ;Print 6
-SSUB LDB R3 NL
-     TRP 3   ;Print NL
-     LDB R3 NL
-     TRP 3 ;Print NL
-     TRP 3 ;Print NL
+ TRAP  TRP 3
+      LDB R3 NL
+      TRP 3
+      LDR R1 A1
+      LDR R2 A2
+      ADD R1 R2
+      MOV R3 R1
+      TRP 1 ;Print 3
+      LDB R3 NL
+      TRP 3 ;Print NL
+      LDR R2 A3
+      ADD R1 R2
+      MOV R3 R1
+      TRP 1   ;Print 6
+ SSUB LDB R3 NL
+      TRP 3   ;Print NL
+      LDB R3 NL
+      TRP 3 ;Print NL
+      TRP 3 ;Print NL
