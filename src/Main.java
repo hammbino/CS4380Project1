@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.*;
 
+//TODO validate that command has valid number of instrucions
+
 public class Main {
 
     private final static int MEM_SIZE = 10000;
@@ -15,7 +17,8 @@ public class Main {
     private final static List<String> INSTRUCTIONS = new ArrayList<>(Arrays.asList("JMP", "JMR", "BNZ", "BGT", "BLT", "BRZ", "MOV", "LDA", "STR", "LDR", "STB", "LDB", "ADD", "ADI", "SUB", "MUL", "DIV", "AND", "OR", "CMP", "TRP"));
     private final static String INT_STRING = ".INT";
     private final static String BYTE_STRING = ".BYT";
-    private static int [] REG= new int[9];
+    private static int [] REG= new int[8];
+    private static int PC = 0;
     private final static List<String> REGISTERS = new ArrayList<>(Arrays.asList("RO", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"));
     private static Map<String, Integer> SYMBOL_TABLE = new HashMap<>();
     private static byte[] DATA = new byte[MEM_SIZE];
@@ -92,66 +95,112 @@ public class Main {
         //Virtual Machine
         //--------------------------------
         int endProgram = BB.position();
-        while(REG[8] < endProgram) {
-            int readInstruction = BB.getInt(REG[8]);
-            REG[8] += INT_SIZE;
-            int instruct1 = BB.getInt(REG[8]);
-            REG[8] += INT_SIZE;
+        while(PC < endProgram) {
+            int readInstruction = BB.getInt(PC);
+            PC += INT_SIZE;
+            int instruct1 = BB.getInt(PC);
+            PC += INT_SIZE;
             int instruct2;
             String instructRun = INSTRUCTIONS.get(readInstruction);
             switch (instructRun) {
+                //Branch to Label
+                case "JMP":
+                    PC = instruct1;
+                    break;
+                //Branch to address in source register
                 case "JMR":
+                    PC = REG[instruct1];
                     break;
+                //Branch to Label if source register is not zero
                 case "BNZ":
+                    instruct2 = BB.getInt(PC);
+                    PC += INT_SIZE;
+                    int bnzLocal = BB.getInt(instruct2);
+                    if (REG[instruct1] != 0) {
+                        PC = bnzLocal;
+                    }
                     break;
+                //Branch to Label if source register is greater than zero
                 case "BGT":
+                    instruct2 = BB.getInt(PC);
+                    PC += INT_SIZE;
+                    int bgtLocal = BB.getInt(instruct2);
+                    if (REG[instruct1] > 0) {
+                        PC = bgtLocal;
+                    }
                     break;
+                //Branch to Label if source register is greater than zero
                 case "BLT":
+                    instruct2 = BB.getInt(PC);
+                    PC += INT_SIZE;
+                    int bltLocal = BB.getInt(instruct2);
+                    if (REG[instruct1] < 0) {
+                        PC = bltLocal;
+                    }
                     break;
                 case "BRZ":
+                    instruct2 = BB.getInt(PC);
+                    PC += INT_SIZE;
+                    int brzLocal = BB.getInt(instruct2);
+                    if (REG[instruct1] == 0) {
+                        PC = brzLocal;
+                    }
                     break;
                 case "MOV":
-                    instruct2 = BB.getInt(REG[8]);
-                    REG[8] += INT_SIZE;
-                    REG[instruct1] = REG[instruct2];
+                    instruct2 = BB.getInt(PC);
+                    PC += INT_SIZE;
+                    if(instruct1 != 8 && instruct2 != 8) {
+                        REG[instruct1] = REG[instruct2];
+                    } else {
+                        System.out.println("Can not change value of the Program Counter with MOV instruction");
+                    }
                     break;
                 case "LDA":
                     break;
                 case "STR":
+                    instruct2 = BB.getInt(PC);
+                    PC += INT_SIZE;
+                    BB.putInt(instruct2, REG[instruct1]);
                     break;
                 case "LDR":
-                    instruct2 = BB.getInt(REG[8]);
-                    REG[8] += INT_SIZE;
+                    instruct2 = BB.getInt(PC);
+                    PC += INT_SIZE;
                     int loadReg = BB.getInt(instruct2);
                     REG[instruct1] = loadReg;
                     break;
                 case "STB":
+                    instruct2 = BB.getInt(PC);
+                    PC += INT_SIZE;
+                    BB.put(instruct2, (byte) REG[instruct1]);
                     break;
                 case "LDB":
-                    instruct2 = (char) BB.getInt(REG[8]);
-                    REG[8] += INT_SIZE;
+                    instruct2 = (byte) BB.getInt(PC);
+                    PC += INT_SIZE;
                     REG[instruct1] = (int) DATA[instruct2];
                     break;
                 case "ADD":
-                    instruct2 = BB.getInt(REG[8]);
-                    REG[8] += INT_SIZE;
+                    instruct2 = BB.getInt(PC);
+                    PC += INT_SIZE;
                     REG[instruct1] = REG[instruct1] + REG[instruct2];
                     break;
                 case "ADI":
+                    instruct2 = BB.getInt(PC);
+                    PC += INT_SIZE;
+                    REG[instruct1] = REG[instruct1] + instruct2;
                     break;
                 case "SUB":
-                    instruct2 = BB.getInt(REG[8]);
-                    REG[8] += INT_SIZE;
+                    instruct2 = BB.getInt(PC);
+                    PC += INT_SIZE;
                     REG[instruct1] = REG[instruct1] - REG[instruct2];
                     break;
                 case "MUL":
-                    instruct2 = BB.getInt(REG[8]);
-                    REG[8] += INT_SIZE;
+                    instruct2 = BB.getInt(PC);
+                    PC += INT_SIZE;
                     REG[instruct1] = REG[instruct1] * REG[instruct2];
                     break;
                 case "DIV":
-                    instruct2 = BB.getInt(REG[8]);
-                    REG[8] += INT_SIZE;
+                    instruct2 = BB.getInt(PC);
+                    PC += INT_SIZE;
                     REG[instruct1] = REG[instruct1] / REG[instruct2];
                     break;
                 case "AND":
@@ -159,6 +208,14 @@ public class Main {
                 case "OR":
                     break;
                 case "CMP":
+                    instruct2 = BB.getInt(PC);
+                    PC += INT_SIZE;
+                    if(REG[instruct1] == REG[instruct2])
+                        REG[instruct1] = 0;
+                    else if(instruct1 > instruct2)
+                        REG[instruct1] = 1;
+                    else if(instruct1 < instruct2)
+                        REG[instruct1] = -1;
                     break;
                 case "TRP":
                     switch (instruct1) {
@@ -194,15 +251,38 @@ public class Main {
     //Method to add instruction to memory
     private static void addInstructToMem (String[] instruction, int offset) {
         switch (instruction[offset]) {
+            case "JMP":
+                int jmpLocal = SYMBOL_TABLE.get(instruction[1 + offset]);
+                BB.putInt(INSTRUCTIONS.indexOf("JMP"));
+                BB.putInt(jmpLocal);
+                break;
             case "JMR":
+                BB.putInt(INSTRUCTIONS.indexOf("JMP"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 break;
             case "BNZ":
+                int bnzLocal = SYMBOL_TABLE.get(instruction[2 + offset]);
+                BB.putInt(INSTRUCTIONS.indexOf("BNZ"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(bnzLocal);
                 break;
             case "BGT":
+                int bgtLocal = SYMBOL_TABLE.get(instruction[2 + offset]);
+                BB.putInt(INSTRUCTIONS.indexOf("BGT"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(bgtLocal);
                 break;
             case "BLT":
+                int bltLocal = SYMBOL_TABLE.get(instruction[2 + offset]);
+                BB.putInt(INSTRUCTIONS.indexOf("BLT"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(bltLocal);
                 break;
             case "BRZ":
+                int brzLocal = SYMBOL_TABLE.get(instruction[2 + offset]);
+                BB.putInt(INSTRUCTIONS.indexOf("BLT"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(brzLocal);
                 break;
             case "MOV":
                 BB.putInt(INSTRUCTIONS.indexOf("MOV"));
@@ -210,8 +290,16 @@ public class Main {
                 BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
                 break;
             case "LDA":
+                int addressOfLbl = SYMBOL_TABLE.get(instruction[2 + offset]);
+                BB.putInt(INSTRUCTIONS.indexOf("LDA"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(addressOfLbl);
                 break;
             case "STR":
+                int lblToStrReg = SYMBOL_TABLE.get(instruction[2 + offset]);
+                BB.putInt(INSTRUCTIONS.indexOf("STR"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(lblToStrReg);
                 break;
             case "LDR":
                 int valForReg = SYMBOL_TABLE.get(instruction[2 + offset]);
@@ -220,6 +308,10 @@ public class Main {
                 BB.putInt(valForReg);
                 break;
             case "STB":
+                int lblToStrByt = SYMBOL_TABLE.get(instruction[2 + offset]);
+                BB.putInt(INSTRUCTIONS.indexOf("STB"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(lblToStrByt);
                 break;
             case "LDB":
                 int bytForReg = SYMBOL_TABLE.get(instruction[2 + offset]);
@@ -233,6 +325,9 @@ public class Main {
                 BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
                 break;
             case "ADI":
+                BB.putInt(INSTRUCTIONS.indexOf("ADI"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(Integer.parseInt(instruction[2 + offset])); //parse the immediate string value
                 break;
             case "SUB":
                 BB.putInt(INSTRUCTIONS.indexOf("SUB"));
@@ -250,10 +345,19 @@ public class Main {
                 BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
                 break;
             case "AND":
+                BB.putInt(INSTRUCTIONS.indexOf("AND"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
                 break;
             case "OR":
+                BB.putInt(INSTRUCTIONS.indexOf("OR"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
                 break;
             case "CMP":
+                BB.putInt(INSTRUCTIONS.indexOf("CMP"));
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
                 break;
             case "TRP":
                 int trpValue = Integer.parseInt(instruction[1 + offset]);
@@ -279,7 +383,6 @@ public class Main {
     private static boolean inSymTable (String valueToCheck) {
         return (SYMBOL_TABLE.containsKey(valueToCheck.toUpperCase()));
     }
-
     //Add label and location to symbol table
     private static void addToSymbolTable(String[] lineToCheck) {
         String label = lineToCheck[0];
@@ -296,8 +399,8 @@ public class Main {
             SYMBOL_TABLE.put(label, MEM_LOCAL);
             MEM_LOCAL += INT_SIZE;
         } else {
-            if (REG[8] == 0) {
-                REG[8] = MEM_LOCAL;
+            if (PC == 0) {
+                PC = MEM_LOCAL;
             }
 
             SYMBOL_TABLE.put(label, MEM_LOCAL);

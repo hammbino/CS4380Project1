@@ -61,7 +61,7 @@ START LDB R3 H
       LDB R3 NL
       TRP 3
       TRP 3
-      LDR R1 B1    ;ADD all the elements of list B togehter Part 3
+ADD1  LDR R1 B1    ;ADD all the elements of list B togehter Part 3
       LDR R2 B2
       ADD R1 R2
       MOV R3 R1
