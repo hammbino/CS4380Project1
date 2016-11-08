@@ -2,6 +2,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.*;
 
 import static java.util.regex.Pattern.matches;
@@ -10,7 +11,6 @@ import static java.util.regex.Pattern.matches;
 //TODO Change Instructions from List to a Map that value is opCode and key is Op name
 
 public class Main {
-
     private final static int MEM_SIZE = 10000;
     private final static int BYTE_SIZE = 1;
     private final static int INT_SIZE = 4;
@@ -22,10 +22,10 @@ public class Main {
     private final static String BYTE_STRING = ".BYT";
     private static int [] REG= new int[8];
     private static int PC = 0;
-    private final static List<String> REGISTERS = new ArrayList<>(Arrays.asList("RO", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"));
+    private final static List<String> REGISTERS = new ArrayList<>(Arrays.asList("R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"));
     private static Map<String, Integer> SYMBOL_TABLE = new HashMap<>();
     private static byte[] DATA = new byte[MEM_SIZE];
-    private static ByteBuffer BB = ByteBuffer.wrap(DATA);
+    private static ByteBuffer BB = ByteBuffer.wrap(DATA).order(ByteOrder.LITTLE_ENDIAN);
     private static int numberOfFilePasses = 0;
 
     public static void main(String[] args) throws IOException {
@@ -157,27 +157,27 @@ public class Main {
                 case 3: //BNZ
                     instruct2 = BB.getInt(PC);
                     PC += INT_SIZE;
-                    int bnzLocal = BB.getInt(instruct2);
+//                    int bnzLocal = BB.getInt(instruct2);
                     if (REG[instruct1] != 0) {
-                        PC = bnzLocal;
+                        PC = instruct2;
                     }
                     break;
                 //Branch to Label if source register is greater than zero
                 case 4: //BGT
                     instruct2 = BB.getInt(PC);
                     PC += INT_SIZE;
-                    int bgtLocal = BB.getInt(instruct2);
+//                    int bgtLocal = BB.getInt(instruct2);
                     if (REG[instruct1] > 0) {
-                        PC = bgtLocal;
+                        PC = instruct2; //bgtLocal;
                     }
                     break;
                 //Branch to Label if source register is greater than zero
                 case 5: //BLT
                     instruct2 = BB.getInt(PC);
                     PC += INT_SIZE;
-                    int bltLocal = BB.getInt(instruct2);
+//                    int bltLocal = BB.getInt(instruct2);
                     if (REG[instruct1] < 0) {
-                        PC = bltLocal;
+                        PC = instruct2; //bltLocal;
                     }
                     break;
                 case 6: //BRZ
@@ -348,7 +348,7 @@ public class Main {
                 BB.putInt(instructOpCode);
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 break;
-            case 3:
+            case 3: //BNZ
                 int bnzLocal = SYMBOL_TABLE.get(instruction[2 + offset]);
                 BB.putInt(instructOpCode);
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
@@ -450,7 +450,7 @@ public class Main {
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(Integer.parseInt(instruction[2 + offset])); //parse the immediate string value
                 break;
-            case 15:
+            case 15: //Sub
                 BB.putInt(instructOpCode);
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
@@ -502,7 +502,7 @@ public class Main {
     }
     //Checks if the label already exists
     private static boolean inSymTable (String valueToCheck) {
-        return (SYMBOL_TABLE.containsKey(valueToCheck.toUpperCase()));
+        return (SYMBOL_TABLE.containsKey(valueToCheck));
     }
     //Add label and location to symbol table
     private static void addToSymbolTable(String[] lineToCheck) {
