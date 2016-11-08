@@ -8,7 +8,6 @@ import java.util.*;
 import static java.util.regex.Pattern.matches;
 
 //TODO validate that command has valid number of instructions
-//TODO Change Instructions from List to a Map that value is opCode and key is Op name
 
 public class Main {
     private final static int MEM_SIZE = 10000;
@@ -212,7 +211,6 @@ public class Main {
                 case 10: //LDR
                     instruct2 = BB.getInt(PC);
                     PC += INT_SIZE;
-                    // int fromMem = BB.getInt(instruct2); TODO delete
                     REG[instruct1] = BB.getInt(instruct2);
                     break;
                 case 11:

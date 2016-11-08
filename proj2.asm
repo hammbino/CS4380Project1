@@ -11,7 +11,7 @@ ARR      .INT     10
          .INT     10
 I        .INT     0
 SUM      .INT     0
-TEMP     .INT     100
+TEMP     .INT     0
 RESULT   .INT     0
 u        .BYT     'u'
 m        .BYT     'm'
