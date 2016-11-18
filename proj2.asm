@@ -29,7 +29,7 @@ S        .BYT     'S'
 NL       .BYT     '\n'
 SP       .BYT     'space'
 WHILE     LDR     R0  I     ;Get the value of I
-          LDR     R7  SIZE
+          LDR     R7  SIZE ;Problem Here
           MOV     R3  R0    ;R3 = I
           CMP     R3  R7    ;I == SIZE
           BRZ     R3  ENDWHILE  ;If equal go to end of while

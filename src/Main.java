@@ -8,20 +8,23 @@ import java.util.*;
 import static java.util.regex.Pattern.matches;
 
 //TODO validate that command has valid number of instructions
+//TODO validate it is not a blank line
 
 public class Main {
     private final static int MEM_SIZE = 10000;
     private final static int BYTE_SIZE = 1;
     private final static int INT_SIZE = 4;
-    private final static int TRAP_SIZE = 8;
+//    private final static int TRAP_SIZE = 8;
+//    private final static int JUMP_SIZE = 8;
     private final static int INSTRUCT_SIZE = 12;
+    private final static int NUM_REGISTERS = 13;
     private static int MEM_LOCAL = 0;
     private final static List<String> INSTRUCTIONS = Arrays.asList("JMP", "JMR", "BNZ", "BGT", "BLT", "BRZ", "MOV", "LDA", "STR", "LDR", "STB", "LDB", "ADD", "ADI", "SUB", "MUL", "DIV", "AND", "OR", "CMP", "TRP");
     private final static String INT_STRING = ".INT";
     private final static String BYTE_STRING = ".BYT";
-    private static int [] REG= new int[8];
+    private static int [] REG= new int[NUM_REGISTERS];
     private static int PC = 0;
-    private final static List<String> REGISTERS = new ArrayList<>(Arrays.asList("R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"));
+    private final static List<String> REGISTERS = Arrays.asList("R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "PC", "SL", "SP", "FP", "SB");
     private static Map<String, Integer> SYMBOL_TABLE = new HashMap<>();
     private static byte[] DATA = new byte[MEM_SIZE];
     private static ByteBuffer BB = ByteBuffer.wrap(DATA).order(ByteOrder.LITTLE_ENDIAN);
@@ -59,11 +62,11 @@ public class Main {
                     } else if (isByte(fileInput[0])) {
                         MEM_LOCAL += BYTE_SIZE;
                     } else if (isInstruction(fileInput[0])) {
-                        if (fileInput[0].equals("TRP") || fileInput[0].equals("JMP") || fileInput[0].equals("JMR") && fileInput.length <= 3) {
-                            MEM_LOCAL += TRAP_SIZE;
-                        } else {
+//                        if (fileInput[0].equals("TRP") || fileInput[0].equals("JMP") || fileInput[0].equals("JMR") && fileInput.length <= 3) {
+//                            MEM_LOCAL += TRAP_SIZE;
+//                        } else {
                             MEM_LOCAL += INSTRUCT_SIZE;
-                        }
+//                        }
                     }
                 }
             }
@@ -141,7 +144,8 @@ public class Main {
             PC += INT_SIZE;
             int instruct1 = BB.getInt(PC);
             PC += INT_SIZE;
-            int instruct2;
+            int instruct2 = BB.getInt(PC);
+            PC += INT_SIZE;
 //            String instructRun = INSTRUCTIONS.get(readInstruction);
             switch (opCode) {
                 //Branch to Label
@@ -154,8 +158,8 @@ public class Main {
                     break;
                 //Branch to Label if source register is not zero
                 case 3: //BNZ
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
 //                    int bnzLocal = BB.getInt(instruct2);
                     if (REG[instruct1] != 0) {
                         PC = instruct2;
@@ -163,8 +167,8 @@ public class Main {
                     break;
                 //Branch to Label if source register is greater than zero
                 case 4: //BGT
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
 //                    int bgtLocal = BB.getInt(instruct2);
                     if (REG[instruct1] > 0) {
                         PC = instruct2; //bgtLocal;
@@ -172,24 +176,24 @@ public class Main {
                     break;
                 //Branch to Label if source register is greater than zero
                 case 5: //BLT
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
 //                    int bltLocal = BB.getInt(instruct2);
                     if (REG[instruct1] < 0) {
                         PC = instruct2; //bltLocal;
                     }
                     break;
                 case 6: //BRZ
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
                     if (REG[instruct1] == 0) {
                         PC = instruct2;  //Set to instruct2
                     }
                     break;
                 //Move data from source register to destination register
                 case 7: //MOV
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
                     if (instruct1 != 8 && instruct2 != 8) { //TODO remove this. The PC counter is not a REG.
                         REG[instruct1] = REG[instruct2];
                     } else {
@@ -198,59 +202,59 @@ public class Main {
                     break;
                 //Load the Address of the label into the RD register.
                 case 8: //LDA
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
                     REG[instruct1] = instruct2;
                     //SYMBOL_TABLE.get(instruction[2 + offset])
                     break;
                 case 9:
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
                     BB.putInt(instruct2, REG[instruct1]);
                     break;
                 case 10: //LDR
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
                     REG[instruct1] = BB.getInt(instruct2);
                     break;
                 case 11:
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
                     BB.put(instruct2, (byte) REG[instruct1]);
                     break;
                 case 12: //LDB
-                    instruct2 = (byte) BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = (byte) BB.getInt(PC);
+//                    PC += INT_SIZE;
                     REG[instruct1] = (int) DATA[instruct2];
                     break;
                 case 13: //ADD
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
                     REG[instruct1] = REG[instruct1] + REG[instruct2];
                     break;
                 case 14: //ADI
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
                     REG[instruct1] = REG[instruct1] + instruct2;
                     break;
                 case 15: //SUB
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
                     REG[instruct1] = REG[instruct1] - REG[instruct2];
                     break;
                 case 16: //MUL
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
                     REG[instruct1] = REG[instruct1] * REG[instruct2];
                     break;
                 case 17:
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
                     REG[instruct1] = REG[instruct1] / REG[instruct2];
                     break;
                 case 18:
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
                     if (REG[instruct1] > 0 && REG[instruct2] > 0) {
                         REG[instruct1] = 1;
                     } else {
@@ -258,8 +262,8 @@ public class Main {
                     }
                     break;
                 case 19:
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
                     if (REG[instruct1] > 0 || REG[instruct2] > 0) {
                         REG[instruct1] = 1;
                     } else {
@@ -267,8 +271,8 @@ public class Main {
                     }
                     break;
                 case 20: //CMP
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
                     if (REG[instruct1] == REG[instruct2])
                         REG[instruct1] = 0;
                     else if (REG[instruct1] > REG[instruct2])
@@ -303,25 +307,25 @@ public class Main {
                     }
                     break;
                 case 22: //STR
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
                     BB.putInt(REG[instruct1], REG[instruct2]);
                     break;
                 case 23:
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
                     int indValue = BB.getInt(REG[instruct2]);
                     REG[instruct1] = indValue;
 //                    REG[instruct1] = BB.getInt(REG[instruct2]);
                     break;
                 case 24:
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
                     BB.put(REG[instruct2], (byte) REG[instruct1]);
                     break;
                 case 25:
-                    instruct2 = BB.getInt(PC);
-                    PC += INT_SIZE;
+//                    instruct2 = BB.getInt(PC);
+//                    PC += INT_SIZE;
                     REG[instruct1] = BB.get(REG[instruct2]);
                     break;
                 default:
@@ -341,10 +345,12 @@ public class Main {
                 int jmpLocal = SYMBOL_TABLE.get(instruction[1 + offset]);
                 BB.putInt(instructOpCode);
                 BB.putInt(jmpLocal);
+                BB.putInt(0);
                 break;
-            case 2:
+            case 2: //JMR
                 BB.putInt(instructOpCode);
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(0);
                 break;
             case 3: //BNZ
                 int bnzLocal = SYMBOL_TABLE.get(instruction[2 + offset]);
@@ -482,6 +488,7 @@ public class Main {
                 int trpValue = Integer.parseInt(instruction[1 + offset]);
                 BB.putInt(instructOpCode);
                 BB.putInt(trpValue);
+                BB.putInt(0);
                 break;
             default:
                 System.out.println("Instruction does not exist: " + instruction[offset]);
@@ -523,11 +530,11 @@ public class Main {
                 //TODO find a better way to set PC start
             }
             SYMBOL_TABLE.put(label, MEM_LOCAL);
-            if (lineToCheck[1].equals("TRP") || lineToCheck[1].equals("JMP") || lineToCheck[1].equals("JMR") && lineToCheck.length <= 3) {
-                MEM_LOCAL += TRAP_SIZE;
-            } else {
+//            if (lineToCheck[1].equals("TRP") || lineToCheck[1].equals("JMP") || lineToCheck[1].equals("JMR") && lineToCheck.length <= 3) {
+//                MEM_LOCAL += TRAP_SIZE;
+//            } else {
                 MEM_LOCAL += INSTRUCT_SIZE;
-            }
+//            }
         }
     }
     //check if directive is a byte
