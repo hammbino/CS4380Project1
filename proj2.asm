@@ -1,4 +1,5 @@
 SIZE     .INT     10
+
 ARR      .INT     10
          .INT     2
          .INT     3
@@ -29,7 +30,7 @@ S        .BYT     'S'
 NL       .BYT     '\n'
 SP       .BYT     'space'
 WHILE     LDR     R0  I     ;Get the value of I
-          LDR     R7  SIZE ;Problem Here
+          LDR     R7  SIZE
           MOV     R3  R0    ;R3 = I
           CMP     R3  R7    ;I == SIZE
           BRZ     R3  ENDWHILE  ;If equal go to end of while
