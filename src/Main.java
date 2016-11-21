@@ -4,10 +4,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
-
 import static java.util.regex.Pattern.matches;
-
-//TODO validate that command has valid number of instructions
 
 public class Main {
     private final static int MEM_SIZE = 10000;
@@ -35,8 +32,13 @@ public class Main {
         //check to see if the program was run with the command line argument
         if (args.length < 1) {
             System.out.println("Error: No file was provided.");
-            System.exit(0);     // TERMINATE THE PROGRAM
+            System.exit(9);     // TERMINATE THE PROGRAM
         }
+
+        REG[REGISTERS.indexOf("SB")] = (MEM_SIZE - INT_SIZE);
+        REG[REGISTERS.indexOf("SP")] = (MEM_SIZE - INT_SIZE);
+        REG[REGISTERS.indexOf("FP")] = (MEM_SIZE - INT_SIZE);
+//        REG[REGISTERS.indexOf("FP")] = (MEM_SIZE - BYTE_SIZE);//TODO delete this is set to SP when first Activation record is created.
 
         while (numberOfFilePasses < 2) {
             //check to see if a scanner can be created using the file that was input
@@ -45,7 +47,7 @@ public class Main {
             } catch (FileNotFoundException x) {
                 System.out.println("ERROR: Unable to open file " + args[0]);
                 x.printStackTrace();
-                System.exit(0);   // TERMINATE THE PROGRAM
+                System.exit(7);   // TERMINATE THE PROGRAM
             }
             //------------------------------
             //check if it is the first pass
@@ -124,6 +126,7 @@ public class Main {
                     System.out.println("ERROR: No instructions were given");
                     System.exit(0);   // TERMINATE THE PROGRAM
                 }
+                REG[REGISTERS.indexOf("SL")] = (MEM_SIZE - BB.remaining());
             }
 
             fileReader.close();
@@ -140,7 +143,6 @@ public class Main {
             REG[REGISTERS.indexOf("PC")] += INT_SIZE;
             int instruct2 = BB.getInt(REG[REGISTERS.indexOf("PC")]);
             REG[REGISTERS.indexOf("PC")] += INT_SIZE;
-//            String instructRun = INSTRUCTIONS.get(readInstruction);
             switch (opCode) {
                 //Branch to Label
                 case 1: //JMP
@@ -154,7 +156,6 @@ public class Main {
                 case 3: //BNZ
 //                    instruct2 = BB.getInt(PC);
 //                    PC += INT_SIZE;
-//                    int bnzLocal = BB.getInt(instruct2);
                     if (REG[instruct1] != 0) {
                         REG[REGISTERS.indexOf("PC")] = instruct2;
                     }
@@ -163,32 +164,30 @@ public class Main {
                 case 4: //BGT
 //                    instruct2 = BB.getInt(PC);
 //                    PC += INT_SIZE;
-//                    int bgtLocal = BB.getInt(instruct2);
                     if (REG[instruct1] > 0) {
-                        REG[REGISTERS.indexOf("PC")] = instruct2; //bgtLocal;
+                        REG[REGISTERS.indexOf("PC")] = instruct2;
                     }
                     break;
                 //Branch to Label if source register is greater than zero
                 case 5: //BLT
 //                    instruct2 = BB.getInt(PC);
 //                    PC += INT_SIZE;
-//                    int bltLocal = BB.getInt(instruct2);
                     if (REG[instruct1] < 0) {
-                        REG[REGISTERS.indexOf("PC")] = instruct2; //bltLocal;
+                        REG[REGISTERS.indexOf("PC")] = instruct2;
                     }
                     break;
                 case 6: //BRZ
 //                    instruct2 = BB.getInt(PC);
 //                    PC += INT_SIZE;
                     if (REG[instruct1] == 0) {
-                        REG[REGISTERS.indexOf("PC")] = instruct2;  //Set to instruct2
+                        REG[REGISTERS.indexOf("PC")] = instruct2;
                     }
                     break;
                 //Move data from source register to destination register
                 case 7: //MOV
 //                    instruct2 = BB.getInt(PC);
 //                    PC += INT_SIZE;
-                    if (instruct1 != REGISTERS.indexOf("PC") && instruct2 != REGISTERS.indexOf("PC")) {
+                    if (instruct1 != REGISTERS.indexOf("PC")) {
                         REG[instruct1] = REG[instruct2];
                     } else {
                         System.out.println("Can not change value of the Program Counter with MOV instruction");
@@ -199,9 +198,8 @@ public class Main {
 //                    instruct2 = BB.getInt(PC);
 //                    PC += INT_SIZE;
                     REG[instruct1] = instruct2;
-                    //SYMBOL_TABLE.get(instruction[2 + offset])
                     break;
-                case 9:
+                case 9: //STR
 //                    instruct2 = BB.getInt(PC);
 //                    PC += INT_SIZE;
                     BB.putInt(instruct2, REG[instruct1]);
@@ -211,7 +209,7 @@ public class Main {
 //                    PC += INT_SIZE;
                     REG[instruct1] = BB.getInt(instruct2);
                     break;
-                case 11:
+                case 11: //STB
 //                    instruct2 = BB.getInt(PC);
 //                    PC += INT_SIZE;
                     BB.put(instruct2, (byte) REG[instruct1]);
@@ -241,12 +239,12 @@ public class Main {
 //                    PC += INT_SIZE;
                     REG[instruct1] = REG[instruct1] * REG[instruct2];
                     break;
-                case 17:
+                case 17: //DIV
 //                    instruct2 = BB.getInt(PC);
 //                    PC += INT_SIZE;
                     REG[instruct1] = REG[instruct1] / REG[instruct2];
                     break;
-                case 18:
+                case 18: //AND
 //                    instruct2 = BB.getInt(PC);
 //                    PC += INT_SIZE;
                     if (REG[instruct1] > 0 && REG[instruct2] > 0) {
@@ -255,7 +253,7 @@ public class Main {
                         REG[instruct1] = 1;
                     }
                     break;
-                case 19:
+                case 19: //OR
 //                    instruct2 = BB.getInt(PC);
 //                    PC += INT_SIZE;
                     if (REG[instruct1] > 0 || REG[instruct2] > 0) {
@@ -274,10 +272,10 @@ public class Main {
                     else if (REG[instruct1] < REG[instruct2])
                         REG[instruct1] = -1;
                     break;
-                case 21:
+                case 21: //TRP
                     switch (instruct1) {
                         case 0:
-                            System.out.println("Closing Program! Trap 0 encountered");
+//                            System.out.println("\n\nClosing Program! Trap 0 encountered");
                             System.exit(0);
                             break;
                         case 1:
@@ -303,21 +301,21 @@ public class Main {
                 case 22: //STR
 //                    instruct2 = BB.getInt(PC);
 //                    PC += INT_SIZE;
-                    BB.putInt(REG[instruct1], REG[instruct2]);
+                    BB.putInt(REG[instruct2], REG[instruct1]);//putInt(int index, int value)
+//                    System.out.println(BB.getInt(REG[instruct1])); TODO delete
                     break;
-                case 23:
+                case 23: //LDR
 //                    instruct2 = BB.getInt(PC);
 //                    PC += INT_SIZE;
                     int indValue = BB.getInt(REG[instruct2]);
                     REG[instruct1] = indValue;
-//                    REG[instruct1] = BB.getInt(REG[instruct2]);
                     break;
-                case 24:
+                case 24: //STB
 //                    instruct2 = BB.getInt(PC);
 //                    PC += INT_SIZE;
                     BB.put(REG[instruct2], (byte) REG[instruct1]);
                     break;
-                case 25:
+                case 25: //LDB
 //                    instruct2 = BB.getInt(PC);
 //                    PC += INT_SIZE;
                     REG[instruct1] = BB.get(REG[instruct2]);
@@ -331,7 +329,7 @@ public class Main {
     //Assembler
     //--------------------------------
     private static void addInstructToMem (String[] instruction, int offset) {
-        String indirectReg = "[rR][0-8]"; //"\\([rR][0-8]\\)"
+        String indirectReg = "^[rR][0-8]$|^[S][L]$|^[S][P]$|^[F][P]$|^[S][B]$";
         int instructOpCode = (INSTRUCTIONS.indexOf(instruction[offset]) + 1);
         switch (instructOpCode) {
             //Branch to Label
@@ -352,25 +350,25 @@ public class Main {
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(bnzLocal);
                 break;
-            case 4:
+            case 4: //BGT
                 int bgtLocal = SYMBOL_TABLE.get(instruction[2 + offset]);
                 BB.putInt(instructOpCode);
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(bgtLocal);
                 break;
-            case 5:
+            case 5: //BLT
                 int bltLocal = SYMBOL_TABLE.get(instruction[2 + offset]);
                 BB.putInt(instructOpCode);
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(bltLocal);
                 break;
-            case 6:
+            case 6: //BRZ
                 int brzLocal = SYMBOL_TABLE.get(instruction[2 + offset]);
                 BB.putInt(instructOpCode);
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(brzLocal);
                 break;
-            case 7:
+            case 7: //MOV
                 BB.putInt(instructOpCode);
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
@@ -383,7 +381,6 @@ public class Main {
                 break;
             case 9: //STR
                 if(matches(indirectReg, instruction[2 + offset])) {
-//                    int memLocal = REG[instruction[1 + offset]];
                     BB.putInt(instructOpCode + 13);
                     BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                     BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
@@ -438,47 +435,47 @@ public class Main {
                     System.out.println("Invalid second value given with LDB command");
                 }
                 break;
-            case 13:
+            case 13: //ADD
                 BB.putInt(instructOpCode);
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
                 break;
-            case 14:
+            case 14: //ADI
                 BB.putInt(instructOpCode);
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(Integer.parseInt(instruction[2 + offset])); //parse the immediate string value
                 break;
-            case 15: //Sub
+            case 15: //SUB
                 BB.putInt(instructOpCode);
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
                 break;
-            case 16:
+            case 16: //MUL
                 BB.putInt(instructOpCode);
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
                 break;
-            case 17:
+            case 17: //DIV
                 BB.putInt(instructOpCode);
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
                 break;
-            case 18:
+            case 18: //AND
                 BB.putInt(instructOpCode);
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
                 break;
-            case 19:
+            case 19: //OR
                 BB.putInt(instructOpCode);
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
                 break;
-            case 20:
+            case 20: //CMP
                 BB.putInt(instructOpCode);
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(REGISTERS.indexOf(instruction[2 + offset]));
                 break;
-            case 21:
+            case 21: //TRP
                 int trpValue = Integer.parseInt(instruction[1 + offset]);
                 BB.putInt(instructOpCode);
                 BB.putInt(trpValue);
@@ -489,15 +486,6 @@ public class Main {
                 break;
         }
 
-    }
-    //Checks if string is an instruction, if not an instruction then a label
-    private static boolean isInstruction (String valueToCheck) {
-        for (String instruction : INSTRUCTIONS) {
-            if (valueToCheck.toUpperCase().equals(instruction)) {
-                return true;
-            }
-        }
-        return false;
     }
     //Checks if the label already exists
     private static boolean inSymTable (String valueToCheck) {
@@ -526,6 +514,15 @@ public class Main {
                 MEM_LOCAL += INSTRUCT_SIZE;
 //            }
         }
+    }
+    //Checks if string is an instruction, if not an instruction then a label
+    private static boolean isInstruction (String valueToCheck) {
+        for (String instruction : INSTRUCTIONS) {
+            if (valueToCheck.toUpperCase().equals(instruction)) {
+                return true;
+            }
+        }
+        return false;
     }
     //check if directive is a byte
     private static boolean isByte (String directive) {

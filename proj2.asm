@@ -28,7 +28,7 @@ A        .BYT     'A'
 G        .BYT     'G'
 S        .BYT     'S'
 NL       .BYT     '\n'
-SP       .BYT     'space'
+SPACE    .BYT     'space'
 WHILE     LDR     R0  I     ;Get the value of I
           LDR     R7  SIZE
           MOV     R3  R0    ;R3 = I
@@ -54,13 +54,13 @@ CHKEVN    BRZ     R3  EVEN
           BNZ     R3  ODD
 EVEN      MOV     R3  R1
           TRP     1
-          LDB     R3  SP
+          LDB     R3  SPACE
           TRP     3
           LDB     R3  i
           TRP     3
           LDB     R3  s
           TRP     3
-          LDB     R3  SP
+          LDB     R3  SPACE
           TRP     3
           LDB     R3  e
           TRP     3
@@ -75,13 +75,13 @@ EVEN      MOV     R3  R1
           JMP     INCI
 ODD       MOV     R3  R1
           TRP     1
-          LDB     R3  SP
+          LDB     R3  SPACE
           TRP     3
           LDB     R3  i
           TRP     3
           LDB     R3  s
           TRP     3
-          LDB     R3  SP
+          LDB     R3  SPACE
           TRP     3
           LDB     R3  o
           TRP     3
@@ -101,13 +101,13 @@ ENDWHILE  LDB     R3  S
           TRP     3
           LDB     R3  m
           TRP     3
-          LDB     R3  SP
+          LDB     R3  SPACE
           TRP     3
           LDB     R3  i
           TRP     3
           LDB     R3  s
           TRP     3
-          LDB     R3  SP
+          LDB     R3  SPACE
           TRP     3
           LDR     R3  SUM
           TRP     1
@@ -121,12 +121,12 @@ DAGS      LDB     R3  D
           TRP     3
           LDB     R3  S
           TRP     3
-          LDB     R3  SP
+          LDB     R3  SPACE
           TRP     3
           LDR     R6  D
           MOV     R3  R6
           TRP     1
-          LDB     R3  SP
+          LDB     R3  SPACE
           TRP     3
           LDB     R1  D
           LDB     R2  G
@@ -142,13 +142,14 @@ DAGS      LDB     R3  D
           TRP     3
           LDB     R3  S
           TRP     3
-          LDB     R3  SP
+          LDB     R3  SPACE
           TRP     3
           LDR     R7  D
           MOV     R3  R7
           TRP     1
-          LDB     R3  SP
+          LDB     R3  SPACE
           TRP     3
           SUB     R6  R7
           MOV     R3  R6
           TRP     1
+          TRP     0

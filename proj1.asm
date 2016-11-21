@@ -27,7 +27,7 @@ O     .BYT  'O'
 N     .BYT  'N'
 D     .BYT  'D'
 NL    .BYT  '\n'
-SP    .BYT  'space'
+SPACE .BYT  'space'
 START LDB R3 H
       TRP 3
       LDB R3 A
@@ -43,7 +43,7 @@ START LDB R3 H
       TRP 3
       LDB R3 COM
       TRP 3
-      LDB R3 SP
+      LDB R3 SPACE
       TRP 3
       LDB R3 J
       TRP 3
@@ -66,28 +66,28 @@ ADD1  LDR R1 B1    ;ADD all the elements of list B together Part 3
       ADD R1 R2
       MOV R3 R1
       TRP 1
-      LDB R3 SP
+      LDB R3 SPACE
       TRP 3
       TRP 3
       LDR R2 B3
       ADD R1 R2
       MOV R3 R1
       TRP 1
-      LDB R3 SP
+      LDB R3 SPACE
       TRP 3
       TRP 3
       LDR R2 B4
       ADD R1 R2
       MOV R3 R1
       TRP 1
-      LDB R3 SP
+      LDB R3 SPACE
       TRP 3
       TRP 3
       LDR R2 B5
       ADD R1 R2
       MOV R3 R1
       TRP 1
-      LDB R3 SP
+      LDB R3 SPACE
       TRP 3
       TRP 3
       LDR R2 B6
@@ -102,28 +102,28 @@ ADD1  LDR R1 B1    ;ADD all the elements of list B together Part 3
       MUL R4 R2
       MOV R3 R4
       TRP 1
-      LDB R3 SP
+      LDB R3 SPACE
       TRP 3
       TRP 3
       LDR R2 A3
       MUL R4 R2
       MOV R3 R4
       TRP 1
-      LDB R3 SP
+      LDB R3 SPACE
       TRP 3
       TRP 3
       LDR R2 A4
       MUL R4 R2
       MOV R3 R4
       TRP 1
-      LDB R3 SP
+      LDB R3 SPACE
       TRP 3
       TRP 3
       LDR R2 A5
       MUL R4 R2
       MOV R3 R4
       TRP 1
-      LDB R3 SP
+      LDB R3 SPACE
       TRP 3
       TRP 3
       LDR R2 A6
@@ -137,35 +137,35 @@ ADD1  LDR R1 B1    ;ADD all the elements of list B together Part 3
       LDR R2 B1
       DIV R3 R2
       TRP 1
-      LDB R3 SP
+      LDB R3 SPACE
       TRP 3
       TRP 3
       MOV R3 R1
       LDR R2 B2
       DIV R3 R2
       TRP 1
-      LDB R3 SP
+      LDB R3 SPACE
       TRP 3
       TRP 3
       MOV R3 R1
       LDR R2 B3
       DIV R3 R2
       TRP 1
-      LDB R3 SP
+      LDB R3 SPACE
       TRP 3
       TRP 3
       MOV R3 R1
       LDR R2 B4
       DIV R3 R2
       TRP 1
-      LDB R3 SP
+      LDB R3 SPACE
       TRP 3
       TRP 3
       MOV R3 R1
       LDR R2 B5
       DIV R3 R2
       TRP 1
-      LDB R3 SP
+      LDB R3 SPACE
       TRP 3
       TRP 3
       MOV R3 R1
@@ -179,21 +179,21 @@ ADD1  LDR R1 B1    ;ADD all the elements of list B together Part 3
       LDR R2 C1
       SUB R3 R2
       TRP 1
-      LDB R3 SP
+      LDB R3 SPACE
       TRP 3
       TRP 3
       MOV R3 R4
       LDR R2 C2
       SUB R3 R2
       TRP 1
-      LDB R3 SP
+      LDB R3 SPACE
       TRP 3
       TRP 3
       MOV R3 R4
       LDR R2 C3
       SUB R3 R2
       TRP 1
-      LDB R3 SP
+      LDB R3 SPACE
       TRP 3
       TRP 3
       MOV R3 R4
@@ -202,3 +202,4 @@ ADD1  LDR R1 B1    ;ADD all the elements of list B together Part 3
       TRP 1
       LDB R3 NL
       TRP 3
+      TRP 0
