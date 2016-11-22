@@ -24,6 +24,9 @@ s           .BYT   's'
 t           .BYT   't'
 o           .BYT   'o'
 g           .BYT   'g'
+AT          .BYT   '@'
+PLUS        .BYT   '+'
+MINUS       .BYT   '-'
 SPACE       .BYT   'space'
 NL          .BYT   '\n'
 
@@ -81,7 +84,156 @@ NL          .BYT   '\n'
                 STR	R4  FP  ; Return Address to the Beginning of the Frame
                 JMP	GETDATA	; Call Function
 
-END_PROGRAM     TRP   0
+1M_WHILE        LDR     R0  ARR
+                LDR     R1  AT
+                CMP     R0  R1
+                BRZ     R0  1M_END_WHILE
+                LDR     R4  ARR
+                LDR     R5  PLUS
+                CMP     R4  R5
+                BRZ     R4  1M_IF
+                LDR     R4  ARR
+                LDR     R5  MINUS
+                CMP     R4  R5
+                BRZ     R4  1M_IF
+                JMP     1M_ELSE
+;GETDATA //Get most significant byte
+    ; Test for overflow (SP <  SL)
+1M_IF           MOV    	R5  SP
+                ADI	    R5  -8	; Adjust for space needed (Rtn Address & PFP)
+                CMP 	    R5  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
+                BLT	    R5  OVERFLOW
+
+    ; Create Activation Record and invoke function GETDAT()
+                MOV 	R4  FP	; Save FP in R4, this will be the PFP
+                MOV 	FP  SP	; Point at Current Activation Record 	(FP = SP)
+                ADI	    SP  -4	; Adjust Stack Pointer for Return Address
+                STR	    R4  SP	; PFP to Top of Stack 			(PFP = FP)
+                ADI	    SP  -4	; Adjust Stack Pointer for PFP
+
+    ; Passed Parameters onto the Stack (Pass by Value)
+    ; Set return address
+                MOV 	R4  PC	; PC incremented by 1 instruction
+                ADI	    R4  36	; Compute Return Address (always a fixed amount)
+                STR 	R4  FP  ; Return Address to the Beginning of the Frame
+                JMP	    GETDATA	; Call Function
+
+1M_ELSE         LDA     R1  ARR
+                SUB     R2  R2
+                ADI     R2  1
+                ADD     R1  R2
+                LDA     R4  ARR
+                MOV     R3  R4  ;
+                TRP     1        ;
+                STR     R4  R1 ;TODO THIS IS BROKEN
+                MOV     R3  R4  ;
+                TRP     1        ;
+                MOV     R3  R4  ;
+                TRP     1        ;
+                LDR     R3  R1 ;
+                TRP     1
+                LDR     R1  PLUS
+                STR     R1  R4
+                LDR     R4  CNT
+                ADI     R4  1
+                STR     R4  CNT
+
+2M_WHILE        LDR     R1  DATA
+                BGT     R1  2M_END_WHILE
+2M_IF           LDR     R4  CNT
+                ADI     R4  -1
+                LDA     R5  ARR
+                ADD     R5  R4
+                LDR     R5  R5
+                LDR     R6  NL
+                CMP     R5  R6
+                BNZ     R5  2M_ELSE
+                SUB     R1  R1
+                STR     R1  DATA
+                ADI     R1  1
+                STR     R1  TENTH
+                LDR     R1  CNT
+                ADI     R1  -2
+                STR     R1  CNT
+;3M_WHILE
+;3M_IF
+
+;GETDATA
+    ; Test for overflow (SP <  SL)
+2M_ELSE         MOV    	R5  SP
+                ADI	    R5  -8	; Adjust for space needed (Rtn Address & PFP)
+                CMP 	    R5  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
+                BLT	    R5  OVERFLOW
+
+    ; Create Activation Record and invoke function GETDAT()
+                MOV 	R4  FP	; Save FP in R4, this will be the PFP
+                MOV 	FP  SP	; Point at Current Activation Record 	(FP = SP)
+                ADI	    SP  -4	; Adjust Stack Pointer for Return Address
+                STR	    R4  SP	; PFP to Top of Stack 			(PFP = FP)
+                ADI	    SP  -4	; Adjust Stack Pointer for PFP
+
+    ; Passed Parameters onto the Stack (Pass by Value)
+    ; Set return address
+                MOV 	R4  PC	; PC incremented by 1 instruction
+                ADI	R4  36	; Compute Return Address (always a fixed amount)
+                STR	R4  FP  ; Return Address to the Beginning of the Frame
+                JMP	GETDATA	; Call Function
+
+;RESET
+    ; Test for overflow (SP <  SL)
+2M_END_WHILE    MOV    	R5  SP
+                ADI	    R5  -24	; Adjust for space needed (Rtn Address & PFP)
+                CMP     R5  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
+                BLT	    R5  OVERFLOW
+
+    ; Create Activation Record and invoke function reset(int w, int x, int y, int z)
+                MOV 	R4  FP	; Save FP in R4, this will be the PFP
+                MOV 	FP  SP	; Point at Current Activation Record 	(FP = SP)
+                ADI	    SP  -4	; Adjust Stack Pointer for Return Address
+                STR	    R4  SP	; PFP to Top of Stack 			(PFP = FP)
+                ADI	    SP  -4	; Adjust Stack Pointer for PFP
+
+    ; Passed Parameters onto the Stack (Pass by Value)
+                SUB     R4  R4  ; Set R4 to 0
+                ADI     R4  1
+                STR	    R4  SP  ; Place 1 on the Stack
+                ADI	    SP  -4
+                SUB     R4  R4  ; Set R4 to 0
+                STR	    R4  SP	; Place 0 on the Stack
+                ADI	    SP  -4
+                STR 	R4  SP	; Place 0 on the Stack
+                ADI 	SP  -4
+                STR	    R4  SP	; Place 0 on the Stack
+                ADI	    SP  -4
+    ; Set return address
+                MOV 	R4  PC	; PC incremented by 1 instruction
+                ADI	R4  36	; Compute Return Address (always a fixed amount)
+                STR	R4  FP  ; Return Address to the Beginning of the Frame
+    ; Call function
+                JMP	RESET	; Call Function
+;GETDATA
+    ; Test for overflow (SP <  SL)
+                MOV    	R5  SP
+                ADI	    R5  -8	; Adjust for space needed (Rtn Address & PFP)
+                CMP 	    R5  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
+                BLT	    R5  OVERFLOW
+
+    ; Create Activation Record and invoke function GETDAT()
+                MOV 	R4  FP	; Save FP in R4, this will be the PFP
+                MOV 	FP  SP	; Point at Current Activation Record 	(FP = SP)
+                ADI	    SP  -4	; Adjust Stack Pointer for Return Address
+                STR	    R4  SP	; PFP to Top of Stack 			(PFP = FP)
+                ADI	    SP  -4	; Adjust Stack Pointer for PFP
+
+    ; Passed Parameters onto the Stack (Pass by Value)
+    ; Set return address
+                MOV 	R4  PC	; PC incremented by 1 instruction
+                ADI	R4  36	; Compute Return Address (always a fixed amount)
+                STR	R4  FP  ; Return Address to the Beginning of the Frame
+                JMP	GETDATA	; Call Function
+
+                JMP     1M_WHILE
+1M_END_WHILE    TRP   0
 
 ;GETDATA DECLARATION
     ; Test for overflow (SP <  SL)
