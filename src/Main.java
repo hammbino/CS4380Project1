@@ -19,7 +19,6 @@ public class Main {
     private final static String INT_STRING = ".INT";
     private final static String BYTE_STRING = ".BYT";
     private static int [] REG= new int[NUM_REGISTERS];
-//    private static int PC = 0;
     private final static List<String> REGISTERS = Arrays.asList("R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "PC", "SL", "SP", "FP", "SB");
     private static Map<String, Integer> SYMBOL_TABLE = new HashMap<>();
     private static byte[] DATA = new byte[MEM_SIZE];
@@ -38,7 +37,6 @@ public class Main {
         REG[REGISTERS.indexOf("SB")] = (MEM_SIZE - INT_SIZE);
         REG[REGISTERS.indexOf("SP")] = (MEM_SIZE - INT_SIZE);
         REG[REGISTERS.indexOf("FP")] = (MEM_SIZE - INT_SIZE);
-//        REG[REGISTERS.indexOf("FP")] = (MEM_SIZE - BYTE_SIZE);//TODO delete this is set to SP when first Activation record is created.
 
         while (numberOfFilePasses < 2) {
             //check to see if a scanner can be created using the file that was input
@@ -204,6 +202,7 @@ public class Main {
 //                    PC += INT_SIZE;
                     BB.putInt(instruct2, REG[instruct1]);
                     break;
+                //Load destination register with data from Mem
                 case 10: //LDR
 //                    instruct2 = BB.getInt(PC);
 //                    PC += INT_SIZE;
@@ -292,18 +291,23 @@ public class Main {
                             break;
                         case 4:
                             //read character from standard in
+                            //TODO IMPLIMENT
+                            Scanner s= new Scanner(System.in);
+                            REG[3] = (int)s.next().charAt(0);
                             break;
                         default:
                             System.out.println("Incorrect value for trap command given: " + instruct1);
                             break;
                     }
                     break;
+                //Store data at register location from source register RS, RG
                 case 22: //STR
 //                    instruct2 = BB.getInt(PC);
 //                    PC += INT_SIZE;
+//                    int local = BB.getInt(REG[instruct2]); TODO Delete
                     BB.putInt(REG[instruct2], REG[instruct1]);//putInt(int index, int value)
-//                    System.out.println(BB.getInt(REG[instruct1])); TODO delete
                     break;
+                //Load destination register with data at register location RD, RG
                 case 23: //LDR
 //                    instruct2 = BB.getInt(PC);
 //                    PC += INT_SIZE;
@@ -363,7 +367,7 @@ public class Main {
                 BB.putInt(bltLocal);
                 break;
             case 6: //BRZ
-                int brzLocal = SYMBOL_TABLE.get(instruction[2 + offset]);
+                int brzLocal = SYMBOL_TABLE.get(instruction[2 + offset]);//TODO CHECK THIS CHANGED 2 to 1. DO OTHER PROGRAMS RUN?
                 BB.putInt(instructOpCode);
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(brzLocal);
