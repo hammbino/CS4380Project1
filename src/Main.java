@@ -290,20 +290,20 @@ public class Main {
                             System.out.print(charOutput);
                             break;
                         case 4:
-                            //read character from standard in
-                            int returnChar = 0;
+                            char returnChar = 0;
                             if (inputBuffer.size() == 0) {
                                 Scanner scanner = new Scanner(System.in);
-                                String str = scanner.nextLine();
-                                char[] tempArr = str.toCharArray();
-                                for (int i = 0; i < tempArr.length; i++) {
-                                    inputBuffer.add(tempArr[i]);
+                                if (scanner.hasNextLine()) { //TODO POSSIBLE PROBLEM
+                                    String str = scanner.nextLine();
+                                    char[] tempArr = str.toCharArray();
+                                    for (int i = 0; i < tempArr.length; i++) {
+                                        inputBuffer.add(tempArr[i]);
+                                    }
                                 }
                                 scanner.close();
-                            } else {
-                                returnChar = (char)inputBuffer.get(0);
-                                inputBuffer.remove(0);
                             }
+                            returnChar = (char) inputBuffer.get(0);
+                            inputBuffer.remove(0);
                             REG[3] = returnChar;
                             break;
                         case 99:

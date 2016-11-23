@@ -104,12 +104,12 @@ NL          .BYT   '\n'
                 LDB     R1  AT
                 CMP     R0  R1
                 BRZ     R0  1M_END_WHILE
-                LDR     R4  ARR
-                LDR     R5  PLUS
+                LDB     R4  ARR
+                LDB     R5  PLUS
                 CMP     R4  R5
                 BRZ     R4  1M_IF
-                LDR     R4  ARR
-                LDR     R5  MINUS
+                LDB     R4  ARR
+                LDB     R5  MINUS
                 CMP     R4  R5
                 BRZ     R4  1M_IF
                 JMP     1M_ELSE
@@ -137,23 +137,24 @@ NL          .BYT   '\n'
 1M_ELSE         LDA     R1  ARR
                 SUB     R2  R2
                 ADI     R2  1
-                ADD     R1  R2
-                LDA     R4  ARR
+                ADD     R1  R2      ; R1 = ARR[1]
+                LDA     R4  ARR     ; R4 = ARR[0]
+                LDB     R4  R4
                 STB     R4  R1
-                LDR     R1  PLUS
-                STR     R1  R4
+                LDB     R1  PLUS
+                LDA     R4  ARR     ; R4 = ARR[0]
+                STB     R1  R4
                 LDR     R4  CNT
                 ADI     R4  1
                 STR     R4  CNT
 2M_WHILE        LDR     R1  DATA
-                BGT     R1  2M_END_WHILE
-                BLT     R1  UNDERFLOW
+                BRZ     R1  2M_END_WHILE
 2M_IF           LDR     R4  CNT
                 ADI     R4  -1
                 LDA     R5  ARR
                 ADD     R5  R4
-                LDR     R5  R5
-                LDR     R6  NL
+                LDB     R5  R5
+                LDB     R6  NL
                 CMP     R5  R6
                 BNZ     R5  2M_ELSE
                 SUB     R1  R1
@@ -242,6 +243,7 @@ NL          .BYT   '\n'
 ;GETDATA
     ; Test for overflow (SP <  SL)
 2M_ELSE         MOV    	R5  SP
+
                 ADI	    R5  -8	; Adjust for space needed (Rtn Address & PFP)
                 CMP 	R5  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
                 BLT	    R5  OVERFLOW
@@ -313,7 +315,7 @@ NL          .BYT   '\n'
                 ADI	R4  36	; Compute Return Address (always a fixed amount)
                 STR	R4  FP  ; Return Address to the Beginning of the Frame
                 JMP	GETDATA	; Call Function
-
+                TRP 99
                 JMP     1M_WHILE
 1M_END_WHILE    TRP   0
 
