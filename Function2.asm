@@ -1,28 +1,28 @@
-ARR         .BYT   '0'
+ARR         .BYT   '0' ;0
             .BYT   '0'
             .BYT   '0'
             .BYT   '0'
             .BYT   '0'
             .BYT   '0'
-            .BYT   '0'
-SIZE        .INT    7
-CNT         .INT    0
-TENTH       .INT    0
-DATA        .INT    0
-FLAG        .INT    0
-OPDV        .INT    0
+            .BYT   '0' ;6
+SIZE        .INT    7  ;7
+CNT         .INT    0  ;11
+TENTH       .INT    0  ;15
+DATA        .INT    0  ;19
+FLAG        .INT    0  ;23
+OPDV        .INT    0  ;27
 ZERO        .INT    0
 ONE         .INT    1
-C0          .BYT   '0'
-C1          .BYT   '1'
-C2          .BYT   '2'
-C3          .BYT   '3'
-C4          .BYT   '4'
-C5          .BYT   '5'
-C6          .BYT   '6'
-C7          .BYT   '7'
-C8          .BYT   '8'
-C9          .BYT   '9'
+C0          .INT    0
+C1          .INT    1
+C2          .INT    2
+C3          .INT    3
+C4          .INT    4
+C5          .INT    5
+C6          .INT    6
+C7          .INT    7
+C8          .INT    8
+C9          .INT    9
 N           .BYT   'N'
 u           .BYT   'u'
 m           .BYT   'm'
@@ -98,8 +98,8 @@ NL          .BYT   '\n'
                 ADI	    R4  36	; Compute Return Address (always a fixed amount)
                 STR	    R4  FP  ; Return Address to the Beginning of the Frame
                 JMP	    GETDATA	; Call Function
-
 1M_WHILE        LDA     R0  ARR
+TRP 99 102
                 LDB     R0  R0
                 LDB     R1  AT
                 CMP     R0  R1
@@ -115,12 +115,12 @@ NL          .BYT   '\n'
                 JMP     1M_ELSE
 ;GETDATA //Get most significant byte
     ; Test for overflow (SP <  SL)
-1M_IF           MOV    	R5  SP
+1M_IF           MOV    	R5  SP  ; TODO test with plus or minus
                 ADI	    R5  -8	; Adjust for space needed (Rtn Address & PFP)
-                CMP 	    R5  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
+                CMP 	R5  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
                 BLT	    R5  OVERFLOW
 
-    ; Create Activation Record and invoke function GETDAT()
+    ; Create Activation Record and invoke function GETDATA()
                 MOV 	R4  FP	; Save FP in R4, this will be the PFP
                 MOV 	FP  SP	; Point at Current Activation Record 	(FP = SP)
                 ADI	    SP  -4	; Adjust Stack Pointer for Return Address
@@ -135,19 +135,21 @@ NL          .BYT   '\n'
                 JMP	    GETDATA	; Call Function
 
 1M_ELSE         LDA     R1  ARR
+TRP 99 138
                 SUB     R2  R2
                 ADI     R2  1
                 ADD     R1  R2      ; R1 = ARR[1]
                 LDA     R4  ARR     ; R4 = ARR[0]
                 LDB     R4  R4
                 STB     R4  R1
-                LDB     R1  PLUS
+                LDB     R1  PLUS    ; R1 = '+'
                 LDA     R4  ARR     ; R4 = ARR[0]
                 STB     R1  R4
                 LDR     R4  CNT
                 ADI     R4  1
                 STR     R4  CNT
 2M_WHILE        LDR     R1  DATA
+TRP 99 152
                 BRZ     R1  2M_END_WHILE
 2M_IF           LDR     R4  CNT
                 ADI     R4  -1
@@ -164,45 +166,46 @@ NL          .BYT   '\n'
                 LDR     R1  CNT
                 ADI     R1  -2
                 STR     R1  CNT
-3M_WHILE        LDR     R1  FLAG   ; //TODO CHECK LOGIC ON FLAG
-                SUB     R2  R2
-                CMP     R1  R7
-                BNZ     R1  3M_IF
+3M_WHILE        LDR     R2  FLAG
+                BNZ     R2  3M_IF   ; TODO CHECK LOGIC ON BRANCH
                 LDR     R4  CNT    ; R4 = CNT
-                CMP     R4  R2     ; IF (R4 == R2)
-                BRZ     R4  2M_ELSE
-    ;OPD
+                BRZ     R4  3M_IF   ; TODO CHECK LOGIC ON BRANCH
+TRP 99 173
+               ; CMP     R4  R2     ; IF (R4 == R2)
+               ; BRZ     R4  2M_ELSE
+;OPD
     ; Test for overflow (SP <  SL)
                 MOV    	R5  SP
                 ADI	    R5  -20	; Adjust for space needed (Rtn Address & PFP)
-                CMP     R5  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
+                CMP     R5  SL	    ; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
                 BLT	    R5  OVERFLOW
 
     ; Create Activation Record and invoke function reset(int w, int x, int y, int z)
-                MOV 	R4  FP	; Save FP in R4, this will be the PFP
-                MOV 	FP  SP	; Point at Current Activation Record 	(FP = SP)
-                ADI	    SP  -4	; Adjust Stack Pointer for Return Address
-                STR	    R4  SP	; PFP to Top of Stack 			(PFP = FP)
-                ADI	    SP  -4	; Adjust Stack Pointer for PFP
+                MOV 	R4  FP	    ; Save FP in R4, this will be the PFP
+                MOV 	FP  SP	    ; Point at Current Activation Record 	(FP = SP)
+                ADI	    SP  -4	    ; Adjust Stack Pointer for Return Address
+                STR	    R4  SP	    ; PFP to Top of Stack 			(PFP = FP)
+                ADI	    SP  -4	    ; Adjust Stack Pointer for PFP
 
     ; Passed Parameters onto the Stack (Pass by Value)
-                LDR     R4  ARR ; Load ARR[0] to R4
-                STR	    R4  SP  ; Place ARR[0] on the Stack
-                ADI	    SP  -4  ; Move SP
-                LDR     R4  TENTH  ; Set R4 to TENTH
-                STR	    R4  SP	; Place TENTH on the Stack
-                ADI	    SP  -4  ; Move SP
-                LDR     R4  ARR ; Load ARR[0] to R4
-                LDR     R5  CNT ; Load CNT to R5
-                ADD     R4  R5  ; Load ARR[CNT] into R4
-                STR	    R4  SP	; Place ARR[CNT] on the Stack
-                ADI	    SP  -4  ; Move SP
+                LDB     R4  ARR     ; Load ARR[0] to R4
+                STR	    R4  SP      ; Place ARR[0] on the Stack
+                ADI	    SP  -4      ; Move SP
+                LDR     R4  TENTH   ; Set R4 to TENTH
+                STR	    R4  SP	    ; Place TENTH on the Stack
+                ADI	    SP  -4      ; Move SP
+                LDA     R4  ARR     ; Load ARR[0] to R4
+                LDR     R5  CNT     ; Load CNT to R5
+                ADD     R4  R5      ; Load ARR[CNT] into R4
+                STR	    R4  SP	    ; Place ARR[CNT] on the Stack
+                ADI	    SP  -4      ; Move SP
     ; Set return address
-                MOV 	R4  PC	; PC incremented by 1 instruction
-                ADI	    R4  36	; Compute Return Address (always a fixed amount)
-                STR	    R4  FP  ; Return Address to the Beginning of the Frame
+                MOV 	R4  PC	    ; PC incremented by 1 instruction
+                ADI	    R4  36	    ; Compute Return Address (always a fixed amount)
+                STR	    R4  FP      ; Return Address to the Beginning of the Frame
     ; Call function
-                JMP	    OPD	; Call Function
+                JMP	    OPD	        ; Call Function ; TODO Correct to here
+TRP 99  208
                 LDR     R1  CNT
                 ADI     R1  -1
                 STR     R1  CNT
@@ -213,6 +216,7 @@ NL          .BYT   '\n'
                 STR     R1  TENTH
                 JMP     3M_WHILE
 3M_IF           LDR     R1  FLAG ;//TODO CHECK LOGIC ON FLAG
+TRP 99 219
                 BNZ     R1  2M_WHILE
                 LDB     R3  O
                 TRP     3
@@ -243,7 +247,6 @@ NL          .BYT   '\n'
 ;GETDATA
     ; Test for overflow (SP <  SL)
 2M_ELSE         MOV    	R5  SP
-
                 ADI	    R5  -8	; Adjust for space needed (Rtn Address & PFP)
                 CMP 	R5  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
                 BLT	    R5  OVERFLOW
@@ -258,10 +261,10 @@ NL          .BYT   '\n'
     ; Passed Parameters onto the Stack (Pass by Value)
     ; Set return address
                 MOV 	R4  PC	; PC incremented by 1 instruction
-                ADI	R4  36	; Compute Return Address (always a fixed amount)
-                STR	R4  FP  ; Return Address to the Beginning of the Frame
-                JMP	GETDATA	; Call Function
-                JMP 2M_WHILE
+                ADI	    R4  36	; Compute Return Address (always a fixed amount)
+                STR	    R4  FP  ; Return Address to the Beginning of the Frame
+                JMP	    GETDATA	; Call Function
+                JMP     2M_WHILE
 
 ;RESET
     ; Test for overflow (SP <  SL)
@@ -318,7 +321,7 @@ NL          .BYT   '\n'
                 JMP     1M_WHILE
 1M_END_WHILE    TRP   0
 
-;GETDATA DECLARATION
+;GETDATA DECLARATION ; TODO CHECK FUNCTION
     ; Test for overflow (SP <  SL)
     ; Put local variable on the stack
 GETDATA   LDR   R4  CNT
@@ -398,10 +401,11 @@ GD_ENDIF    MOV  	SP  FP	  ; De-allocate Current Activation Record 	(SP = FP)
 
     ; Set Previous Frame to Current Frame and Return
             LDR 	R5  FP	   ; Return Address Pointed to by FP
-            LDR	    FP  FP     ; Point at Previous Activation Record 	(FP = PFP)
+            MOV     R0  FP
+            ADI     R0  -4
+            LDR     R0  FP     ; Point at Previous Activation Record 	(FP = PFP)
             JMR	    R5	       ; Jump to Return Address in Register R5
-
-;FLUSH DECLARATION
+;FLUSH DECLARATION ;TODO CHECK FUNCTION
     ; Test for overflow (SP <  SL)
     ; Put local variable on the stack
 FLUSH       SUB     R4  R4
@@ -423,10 +427,12 @@ END_FLUSH_WHILE MOV  	SP  FP	  ; De-allocate Current Activation Record 	(SP = FP
 
     ; Set Previous Frame to Current Frame and Return
             LDR 	R5  FP	   ; Return Address Pointed to by FP
-            LDR	    FP  FP     ; Point at Previous Activation Record 	(FP = PFP)
+            MOV     R0  FP
+            ADI     R0  -4
+            LDR     R0  FP     ; Point at Previous Activation Record 	(FP = PFP)
             JMR	    R5	       ; Jump to Return Address in Register R5
 
-;RESET DECLARATION
+;RESET DECLARATION TODO FUNCTION CHECKED
     ; Test for overflow (SP <  SL)
 RESET       MOV     R5  SP  ; check for stack overflow for local variable k
             ADI     R5  -4
@@ -454,21 +460,20 @@ RESET       MOV     R5  SP  ; check for stack overflow for local variable k
             JMP     R_FOR
  R_FOR_END  MOV     R0   FP
             ADI     R0   -8
-            LDR     R1   R0
+            LDR     R1   R0     ; R1 = w (1)
             STR     R1   DATA
             MOV     R0   FP
             ADI     R0   -12
-            LDR     R1   R0
+            LDR     R1   R0     ; R1 = x (0)
             STR     R1   OPDV
             MOV     R0   FP
             ADI     R0   -16
-            LDR     R1   R0
+            LDR     R1   R0     ; R1 = y (0)
             STR     R1   CNT
             MOV     R0   FP
             ADI     R0   -20
-            LDR     R1   R0
+            LDR     R1   R0     ; R1 = z (0)
             STR     R1   FLAG
-
     ; Test for Underflow (SP > SB)
             MOV  	SP  FP	  ; De-allocate Current Activation Record 	(SP = FP)
             MOV 	R5  SP
@@ -477,7 +482,9 @@ RESET       MOV     R5  SP  ; check for stack overflow for local variable k
 
     ; Set Previous Frame to Current Frame and Return
             LDR 	R5  FP	   ; Return Address Pointed to by FP
-            LDR	    FP  FP     ; Point at Previous Activation Record 	(FP = PFP)
+            MOV     R0  FP
+            ADI     R0  -4
+            LDR     R0  FP     ; Point at Previous Activation Record 	(FP = PFP)
             JMR	    R5	       ; Jump to Return Address in Register R5
 
 ;OPD DECLARATION
@@ -491,96 +498,96 @@ OPD         MOV     R5  SP  ; check for stack overflow for local variable k
             STR	    R5  SP	; Place T initialized to 0 on the Stack
             ADI	    SP  -4
     ;if/else statements
-            SUB     R7  R7     ;Integer value to store
+            SUB     R7  R7     ;Integer value to store  ; TODO Correct to here
             MOV     R0  FP
-            ADI     R0  -20
-IF0_OPD     LDB     R2  R0     ;//TODO Check what R0 is
-            LDB     R1  C0
+            ADI     R0  -16
+IF0_OPD     LDB     R2  R0 ; TODO LOADS 1 INTO R2
+            LDR     R1  C0
             CMP     R2  R1
             BNZ     R2  IF1_OPD
             MOV     R6  FP
-            ADI     R6  -24
+            ADI     R6  -20
             STR     R7  R6
             JMP     OPD_LAST_IF
 IF1_OPD     LDB     R2  R0
-            LDB     R1  C1
+            LDR     R1  C1
             CMP     R2  R1
             BNZ     R2  IF2_OPD
             ADI     R7  1
             MOV     R6  FP
-            ADI     R6  -24
+            ADI     R6  -20
             STR     R7  R6
             JMP     OPD_LAST_IF
 IF2_OPD     LDB     R2  R0
-            LDB     R1  C2
+            LDR     R1  C2
             CMP     R2  R1
             BNZ     R2  IF3_OPD
             ADI     R7  2
             MOV     R6  FP
-            ADI     R6  -24
+            ADI     R6  -20
             STR     R7  R6
             JMP     OPD_LAST_IF
 IF3_OPD     LDB     R2  R0
-            LDB     R1  C3
+            LDR     R1  C3
             CMP     R2  R1
             BNZ     R2  IF3_OPD
             ADI     R7  3
             MOV     R6  FP
-            ADI     R6  -24
+            ADI     R6  -20
             STR     R7  R6
             JMP     OPD_LAST_IF
 IF4_OPD     LDB     R2  R0
-            LDB     R1  C4
+            LDR     R1  C4
             CMP     R2  R1
             BNZ     R2  IF4_OPD
             ADI     R7  4
             MOV     R6  FP
-            ADI     R6  -24
+            ADI     R6  -20
             STR     R7  R6
             JMP     OPD_LAST_IF
 IF5_OPD     LDB     R2  R0
-            LDB     R1  C5
+            LDR     R1  C5
             CMP     R2  R1
             BNZ     R2  IF6_OPD
             ADI     R7  5
             MOV     R6  FP
-            ADI     R6  -24
+            ADI     R6  -20
             STR     R7  R6
             JMP     OPD_LAST_IF
 IF6_OPD     LDB     R2  R0
-            LDB     R1  C6
+            LDR     R1  C6
             CMP     R2  R1
             BNZ     R2  IF7_OPD
             ADI     R7  6
             MOV     R6  FP
-            ADI     R6  -24
+            ADI     R6  -20
             STR     R7  R6
             JMP     OPD_LAST_IF
 IF7_OPD     LDB     R2  R0
-            LDB     R1  C7
+            LDR     R1  C7
             CMP     R2  R1
             BNZ     R2  IF8_OPD
             ADI     R7  7
             MOV     R6  FP
-            ADI     R6  -24
+            ADI     R6  -20
             STR     R7  R6
             JMP     OPD_LAST_IF
 IF8_OPD     LDB     R2  R0
-            LDB     R1  C8
+            LDR     R1  C8
             CMP     R2  R1
             BNZ     R2  IF9_OPD
             ADI     R7  8
             MOV     R6  FP
-            ADI     R6  -24
+            ADI     R6  -20
             STR     R7  R6
             JMP     OPD_LAST_IF
 IF9_OPD     LDB     R2  R0
-            LDB     R1  C9
+            LDR     R1  C9
             CMP     R2  R1
             BNZ     R2  OPD_NOT_NUM
             ADI     R7  9
             MOV     R6  FP
-            ADI     R6  -24
+            ADI     R6  -20
             STR     R7  R6
             JMP     OPD_LAST_IF
 OPD_NOT_NUM LDB     R3  R0
@@ -626,13 +633,16 @@ OPD_NOT_NUM LDB     R3  R0
 OPD_LAST_IF LDR     R7  FLAG
             BNZ     R7  OPD_RETURN
             MOV     R0  FP
-            ADI     R0  -12     ; R0 = s
+            ADI     R0  -8     ; R0 = s
+            LDR     R0  R0
             MOV     R1  FP
-            ADI     R1  -16     ; R1 = k
+            ADI     R1  -12     ; R1 = k
+            LDR     R1  R1
             MOV     R2  FP
-            ADI     R2  -24     ; R2 = t
+            ADI     R2  -20     ; R2 = t
+            LDR     R2  R2
             LDB     R4  PLUS
-            CMP     RO  R4
+            CMP     R0  R4
             BNZ     R0  OPDFIN_ELSE
             MUL     R2  R1      ; t *= k
             JMP     ADD_OPDV
@@ -650,7 +660,9 @@ OPD_RETURN  MOV  	SP  FP	  ; De-allocate Current Activation Record 	(SP = FP)
 
     ; Set Previous Frame to Current Frame and Return
             LDR 	R5  FP	   ; Return Address Pointed to by FP
-            LDR	    FP  FP     ; Point at Previous Activation Record 	(FP = PFP)
+            MOV     R0  FP
+            ADI     R0  -4
+            LDR     R0  FP     ; Point at Previous Activation Record 	(FP = PFP)
             JMR	    R5	       ; Jump to Return Address in Register R5
 
 ;OVERFLOW DECLARATION

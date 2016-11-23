@@ -23,9 +23,10 @@ public class Main {
     private static ByteBuffer BB = ByteBuffer.wrap(DATA).order(ByteOrder.LITTLE_ENDIAN);
     private static int numberOfFilePasses = 0;
 //    private static Scanner inputScanner = new Scanner(System.in);
-//    private static char [] inputArray;
+    private static char [] dataCharArray = {'\n'};
 //    private static ByteBuffer inputBuffer;
     private static String inputCharStr = "";
+    private static Stack<Character> inputStack = new Stack<Character>();
 
     public static void main(String[] args) throws IOException {
         Scanner fileReader = null;
@@ -36,7 +37,7 @@ public class Main {
             System.exit(9);     // TERMINATE THE PROGRAM
         }
 
-        REG[REGISTERS.indexOf("SB")] = (MEM_SIZE - INT_SIZE);
+        REG[REGISTERS.indexOf("SB")] = (MEM_SIZE - INT_SIZE); //To account for BB starting a 0
         REG[REGISTERS.indexOf("SP")] = (MEM_SIZE - INT_SIZE);
         REG[REGISTERS.indexOf("FP")] = (MEM_SIZE - INT_SIZE);
 
@@ -292,20 +293,22 @@ public class Main {
                             System.out.print(charOutput);
                             break;
                         case 4:
-                            if(inputCharStr.equals("") ) {
+                            if(inputStack.empty()) {
+                                inputStack.push('\n');
                                 Scanner inputScanner = new Scanner(System.in);
-                                inputCharStr = inputScanner.nextLine();
+                                dataCharArray = inputScanner.nextLine().toCharArray();
+                                for (char charArrElement:dataCharArray) {
+                                    inputStack.push(charArrElement);
+                                }
                             }
-                            char returnChar = inputCharStr.charAt(0);
-                            if (inputCharStr.length() > 1) {
-                                inputCharStr = inputCharStr.substring(1);
-                            } else {
-                                inputCharStr = "";
+                            try {
+                                REG[3] = inputStack.pop();
+                            }catch (EmptyStackException e) {
+                                System.out.println("empty stack");
                             }
-                            REG[3] = returnChar;
                             break;
                         case 99:
-                            System.out.println("TRP 99");
+                            System.out.println("TRP 99 " + instruct2);
                             break;
                         default:
                             System.out.println("Incorrect value for trap command given: " + instruct1);
