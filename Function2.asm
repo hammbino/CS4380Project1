@@ -315,7 +315,6 @@ NL          .BYT   '\n'
                 ADI	R4  36	; Compute Return Address (always a fixed amount)
                 STR	R4  FP  ; Return Address to the Beginning of the Frame
                 JMP	GETDATA	; Call Function
-                TRP 99
                 JMP     1M_WHILE
 1M_END_WHILE    TRP   0
 

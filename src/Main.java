@@ -22,8 +22,10 @@ public class Main {
     private static byte[] DATA = new byte[MEM_SIZE];
     private static ByteBuffer BB = ByteBuffer.wrap(DATA).order(ByteOrder.LITTLE_ENDIAN);
     private static int numberOfFilePasses = 0;
-    private static ArrayList inputBuffer = new ArrayList();
-
+//    private static Scanner inputScanner = new Scanner(System.in);
+//    private static char [] inputArray;
+//    private static ByteBuffer inputBuffer;
+    private static String inputCharStr = "";
 
     public static void main(String[] args) throws IOException {
         Scanner fileReader = null;
@@ -290,20 +292,16 @@ public class Main {
                             System.out.print(charOutput);
                             break;
                         case 4:
-                            char returnChar = 0;
-                            if (inputBuffer.size() == 0) {
-                                Scanner scanner = new Scanner(System.in);
-                                if (scanner.hasNextLine()) { //TODO POSSIBLE PROBLEM
-                                    String str = scanner.nextLine();
-                                    char[] tempArr = str.toCharArray();
-                                    for (int i = 0; i < tempArr.length; i++) {
-                                        inputBuffer.add(tempArr[i]);
-                                    }
-                                }
-                                scanner.close();
+                            if(inputCharStr.equals("") ) {
+                                Scanner inputScanner = new Scanner(System.in);
+                                inputCharStr = inputScanner.nextLine();
                             }
-                            returnChar = (char) inputBuffer.get(0);
-                            inputBuffer.remove(0);
+                            char returnChar = inputCharStr.charAt(0);
+                            if (inputCharStr.length() > 1) {
+                                inputCharStr = inputCharStr.substring(1);
+                            } else {
+                                inputCharStr = "";
+                            }
                             REG[3] = returnChar;
                             break;
                         case 99:
@@ -318,7 +316,6 @@ public class Main {
                 case 22: //STR
 //                    instruct2 = BB.getInt(PC);
 //                    PC += INT_SIZE;
-//                    int local = BB.getInt(REG[instruct2]); TODO Delete
                     BB.putInt(REG[instruct2], REG[instruct1]);//putInt(int index, int value)
                     break;
                 //Load destination register with data at register location RD, RG
@@ -381,7 +378,7 @@ public class Main {
                 BB.putInt(bltLocal);
                 break;
             case 6: //BRZ
-                int brzLocal = SYMBOL_TABLE.get(instruction[2 + offset]);//TODO CHECK THIS CHANGED 2 to 1. DO OTHER PROGRAMS RUN?
+                int brzLocal = SYMBOL_TABLE.get(instruction[2 + offset]);
                 BB.putInt(instructOpCode);
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(brzLocal);
