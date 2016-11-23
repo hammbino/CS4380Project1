@@ -103,6 +103,7 @@ TRP 99 102
                 LDB     R0  R0
                 LDB     R1  AT
                 CMP     R0  R1
+TRP 99 106
                 BRZ     R0  1M_END_WHILE
                 LDB     R4  ARR
                 LDB     R5  PLUS
@@ -158,14 +159,17 @@ TRP 99 152
                 LDB     R5  R5
                 LDB     R6  NL
                 CMP     R5  R6
+TRP 99 161
                 BNZ     R5  2M_ELSE
                 SUB     R1  R1
                 STR     R1  DATA
                 ADI     R1  1
                 STR     R1  TENTH
                 LDR     R1  CNT
+TRP 99 169
                 ADI     R1  -2
                 STR     R1  CNT
+TRP 99 172
 3M_WHILE        LDR     R2  FLAG
                 BNZ     R2  3M_IF   ; TODO CHECK LOGIC ON BRANCH
                 LDR     R4  CNT    ; R4 = CNT
@@ -215,7 +219,7 @@ TRP 99  208
                 MUL     R1  R2
                 STR     R1  TENTH
                 JMP     3M_WHILE
-3M_IF           LDR     R1  FLAG ;//TODO CHECK LOGIC ON FLAG
+3M_IF           LDR     R1  FLAG ; TODO CHECK LOGIC ON FLAG
 TRP 99 219
                 BNZ     R1  2M_WHILE
                 LDB     R3  O
@@ -247,6 +251,7 @@ TRP 99 219
 ;GETDATA
     ; Test for overflow (SP <  SL)
 2M_ELSE         MOV    	R5  SP
+TRP 99 254
                 ADI	    R5  -8	; Adjust for space needed (Rtn Address & PFP)
                 CMP 	R5  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
                 BLT	    R5  OVERFLOW
@@ -269,6 +274,7 @@ TRP 99 219
 ;RESET
     ; Test for overflow (SP <  SL)
 2M_END_WHILE    MOV    	R5  SP
+TRP 99 275
                 ADI	    R5  -24	; Adjust for space needed (Rtn Address & PFP)
                 CMP     R5  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
                 BLT	    R5  OVERFLOW
@@ -300,6 +306,7 @@ TRP 99 219
                 JMP	RESET	; Call Function
 ;GETDATA
     ; Test for overflow (SP <  SL)
+    TRP 99 307
                 MOV    	R5  SP
                 ADI	    R5  -8	; Adjust for space needed (Rtn Address & PFP)
                 CMP 	    R5  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
@@ -411,12 +418,15 @@ GD_ENDIF    MOV  	SP  FP	  ; De-allocate Current Activation Record 	(SP = FP)
 FLUSH       SUB     R4  R4
             STR     R4  DATA
             LDA     R0  ARR
+TRP 99 421
+            TRP     4
             STB     R3  R0
 FLUSH_WHILE LDR     R0  ARR
             LDB     R1  NL
             CMP     R0  R1
             BRZ     R0  END_FLUSH_WHILE
             LDA     R0  ARR
+            TRP     4
             STB     R3  R0
             JMP     FLUSH_WHILE
     ; Test for Underflow (SP > SB)
@@ -650,8 +660,10 @@ OPDFIN_ELSE SUB     R6  R6
             ADI     R6  -1
             MUL     R1  R6      ; k *= -1
             MUL     R2  R1      ; t *= k
+TRP 99 655
 ADD_OPDV    LDR     R4  OPDV    ; R4 = OPDV
             ADD     R4  R2      ; OPDV += t
+            STR     R4  OPDV
     ; Test for Underflow (SP > SB)
 OPD_RETURN  MOV  	SP  FP	  ; De-allocate Current Activation Record 	(SP = FP)
             MOV 	R5  SP

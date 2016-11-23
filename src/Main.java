@@ -16,17 +16,13 @@ public class Main {
     private final static List<String> INSTRUCTIONS = Arrays.asList("JMP", "JMR", "BNZ", "BGT", "BLT", "BRZ", "MOV", "LDA", "STR", "LDR", "STB", "LDB", "ADD", "ADI", "SUB", "MUL", "DIV", "AND", "OR", "CMP", "TRP");
     private final static String INT_STRING = ".INT";
     private final static String BYTE_STRING = ".BYT";
-    private static int [] REG= new int[NUM_REGISTERS];
+    static int [] REG= new int[NUM_REGISTERS];
     private final static List<String> REGISTERS = Arrays.asList("R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "PC", "SL", "SP", "FP", "SB");
-    private static Map<String, Integer> SYMBOL_TABLE = new HashMap<>();
+    static Map<String, Integer> SYMBOL_TABLE = new HashMap<>();
     private static byte[] DATA = new byte[MEM_SIZE];
     private static ByteBuffer BB = ByteBuffer.wrap(DATA).order(ByteOrder.LITTLE_ENDIAN);
     private static int numberOfFilePasses = 0;
-//    private static Scanner inputScanner = new Scanner(System.in);
-    private static char [] dataCharArray = {'\n'};
-//    private static ByteBuffer inputBuffer;
-    private static String inputCharStr = "";
-    private static Stack<Character> inputStack = new Stack<Character>();
+    static Stack<Character> inputStack = new Stack<>();
 
     public static void main(String[] args) throws IOException {
         Scanner fileReader = null;
@@ -50,31 +46,8 @@ public class Main {
                 x.printStackTrace();
                 System.exit(7);   // TERMINATE THE PROGRAM
             }
-            //------------------------------
-            //check if it is the first pass
-            //------------------------------
-            if (numberOfFilePasses == 0) {
-                //read each line from the file
-                while (fileReader.hasNextLine()) {
-                    String[] fileInput = fileReader.nextLine().replaceAll(";.*", " ").trim().split("\\s+");
-                    if(!fileInput[0].isEmpty() && (isInstruction(fileInput[0]) || isInstruction(fileInput[1])) && REG[8] == 0) {
-                        REG[REGISTERS.indexOf("PC")] = MEM_LOCAL;
-                    }
-                    if (!isInstruction(fileInput[0]) && !isInt(fileInput[0]) && !isByte(fileInput[0]) && !fileInput[0].isEmpty()) {
-                        addToSymbolTable(fileInput);
-                    } else if (isInt(fileInput[0])) {
-                        MEM_LOCAL += INT_SIZE;
-                    } else if (isByte(fileInput[0])) {
-                        MEM_LOCAL += BYTE_SIZE;
-                    } else if (isInstruction(fileInput[0])) {
-//                        if (fileInput[0].equals("TRP") || fileInput[0].equals("JMP") || fileInput[0].equals("JMR") && fileInput.length <= 3) {
-//                            MEM_LOCAL += TRAP_SIZE;
-//                        } else {
-                            MEM_LOCAL += INSTRUCT_SIZE;
-//                        }
-                    }
-                }
-            }
+            firstPass(fileReader);
+
             //--------------------------------
             //check if it is the second pass
             //--------------------------------
@@ -293,19 +266,7 @@ public class Main {
                             System.out.print(charOutput);
                             break;
                         case 4:
-                            if(inputStack.empty()) {
-                                inputStack.push('\n');
-                                Scanner inputScanner = new Scanner(System.in);
-                                dataCharArray = inputScanner.nextLine().toCharArray();
-                                for (char charArrElement:dataCharArray) {
-                                    inputStack.push(charArrElement);
-                                }
-                            }
-                            try {
-                                REG[3] = inputStack.pop();
-                            }catch (EmptyStackException e) {
-                                System.out.println("empty stack");
-                            }
+                            trap4();
                             break;
                         case 99:
                             System.out.println("TRP 99 " + instruct2);
@@ -497,7 +458,11 @@ public class Main {
                 int trpValue = Integer.parseInt(instruction[1 + offset]);
                 BB.putInt(instructOpCode);
                 BB.putInt(trpValue);
-                BB.putInt(0);
+                if (instruction.length > 2 && !inSymTable(instruction[0])) {
+                    BB.putInt(Integer.parseInt(instruction[2 + offset]));
+                } else {
+                    BB.putInt(0);
+                }
                 break;
             default:
                 System.out.println("Instruction does not exist: " + instruction[offset]);
@@ -549,5 +514,58 @@ public class Main {
     //check if directive is an int
     private static boolean isInt (String directive) {
         return directive.equals(INT_STRING);
+    }
+    //First Pass
+    static void firstPass(Scanner fileReader) {
+        //------------------------------
+        //check if it is the first pass
+        //------------------------------
+        if (numberOfFilePasses == 0) {
+            //read each line from the file
+            while (fileReader.hasNextLine()) {
+                String[] fileInput = fileReader.nextLine().replaceAll(";.*", " ").trim().split("\\s+");
+                if (!fileInput[0].isEmpty() && (isInstruction(fileInput[0]) || isInstruction(fileInput[1])) && REG[8] == 0) {
+                    REG[REGISTERS.indexOf("PC")] = MEM_LOCAL;
+                }
+                if (!isInstruction(fileInput[0]) && !isInt(fileInput[0]) && !isByte(fileInput[0]) && !fileInput[0].isEmpty()) {
+                    addToSymbolTable(fileInput);
+                } else if (isInt(fileInput[0])) {
+                    MEM_LOCAL += INT_SIZE;
+                } else if (isByte(fileInput[0])) {
+                    MEM_LOCAL += BYTE_SIZE;
+                } else if (isInstruction(fileInput[0])) {
+//                        if (fileInput[0].equals("TRP") || fileInput[0].equals("JMP") || fileInput[0].equals("JMR") && fileInput.length <= 3) {
+//                            MEM_LOCAL += TRAP_SIZE;
+//                        } else {
+                    MEM_LOCAL += INSTRUCT_SIZE;
+//                        }
+                }
+            }
+        }
+    }
+    //Trap 4 works like getChar()
+    static void trap4() {
+        if (inputStack.empty()) {
+            inputStack.push('\n');
+            Scanner inputScanner = new Scanner(System.in);
+            char[] dataCharArray = inputScanner.nextLine().toCharArray();
+
+            for(int counter = (dataCharArray.length -1); counter >= 0; counter--){
+                inputStack.push(dataCharArray[counter]);
+            }
+//            List<Character> cList = new ArrayList<Character>();
+//            for(char c : dataCharArray) {
+//                cList.add(c);
+//            }
+//            cList.
+//            for (char charArrElement : dataCharArray) {
+//                inputStack.push(charArrElement);
+//            }
+        }
+        try {
+            REG[3] = inputStack.pop();
+        } catch (EmptyStackException e) {
+            System.out.println("empty stack");
+        }
     }
 }

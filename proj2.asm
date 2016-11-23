@@ -42,7 +42,7 @@ WHILE     LDR     R0  I     ;Get the value of I
           LDR     R7  SUM   ;R7 = SUM
           ADD     R7  R1    ;SUM (R7) += ARR[I]
           LDA     R2  SUM   ;R2 = SUM&
-          STR     R2  R7    ;Sum& = R7
+          STR     R7  R2    ;Sum& = R7
 CHECK     SUB     R2  R2    ;R2 = 0
           ADI     R2  2     ;R2 = 2
           MOV     R3  R1
@@ -92,7 +92,7 @@ ODD       MOV     R3  R1
           JMP     INCI
 INCI      ADI     R0  1
           LDA     R1  I
-          STR     R1  R0
+          STR     R0  R1
           JMP     WHILE
 ENDWHILE  LDB     R3  S
           TRP     3
