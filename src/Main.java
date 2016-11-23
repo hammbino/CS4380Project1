@@ -306,6 +306,9 @@ public class Main {
                             }
                             REG[3] = returnChar;
                             break;
+                        case 99:
+                            System.out.println("TRP 99");
+                            break;
                         default:
                             System.out.println("Incorrect value for trap command given: " + instruct1);
                             break;
@@ -344,8 +347,7 @@ public class Main {
     //Assembler
     //--------------------------------
     private static void addInstructToMem (String[] instruction, int offset) {
-        String indirectReg = "[rR][0-8]"; //"\\([rR][0-8]\\)"
-        //String indirectReg = "^[rR][0-8]$|^[S][L]$|^[S][P]$|^[F][P]$|^[S][B]$";
+        String indirectReg = "^[rR][0-8]$|^[S][L]$|^[S][P]$|^[F][P]$|^[S][B]$";
         int instructOpCode = (INSTRUCTIONS.indexOf(instruction[offset]) + 1);
         switch (instructOpCode) {
             //Branch to Label

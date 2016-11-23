@@ -328,6 +328,7 @@ GETDATA   LDR   R4  CNT
 GD_IF     LDA   R0  ARR
           LDR   R1  CNT
           ADD   R0  R1
+          TRP   4
           STB   R3  R0
           ADI   R1  1
           STR   R1  CNT
