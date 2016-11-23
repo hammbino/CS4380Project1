@@ -1,6 +1,4 @@
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
@@ -24,6 +22,8 @@ public class Main {
     private static byte[] DATA = new byte[MEM_SIZE];
     private static ByteBuffer BB = ByteBuffer.wrap(DATA).order(ByteOrder.LITTLE_ENDIAN);
     private static int numberOfFilePasses = 0;
+    private static ArrayList inputBuffer = new ArrayList();
+
 
     public static void main(String[] args) throws IOException {
         Scanner fileReader = null;
@@ -291,9 +291,20 @@ public class Main {
                             break;
                         case 4:
                             //read character from standard in
-                            //TODO IMPLIMENT
-                            Scanner s= new Scanner(System.in);
-                            REG[3] = (int)s.next().charAt(0);
+                            int returnChar = 0;
+                            if (inputBuffer.size() == 0) {
+                                Scanner scanner = new Scanner(System.in);
+                                String str = scanner.nextLine();
+                                char[] tempArr = str.toCharArray();
+                                for (int i = 0; i < tempArr.length; i++) {
+                                    inputBuffer.add(tempArr[i]);
+                                }
+                                scanner.close();
+                            } else {
+                                returnChar = (char)inputBuffer.get(0);
+                                inputBuffer.remove(0);
+                            }
+                            REG[3] = returnChar;
                             break;
                         default:
                             System.out.println("Incorrect value for trap command given: " + instruct1);
@@ -333,7 +344,8 @@ public class Main {
     //Assembler
     //--------------------------------
     private static void addInstructToMem (String[] instruction, int offset) {
-        String indirectReg = "^[rR][0-8]$|^[S][L]$|^[S][P]$|^[F][P]$|^[S][B]$";
+        String indirectReg = "[rR][0-8]"; //"\\([rR][0-8]\\)"
+        //String indirectReg = "^[rR][0-8]$|^[S][L]$|^[S][P]$|^[F][P]$|^[S][B]$";
         int instructOpCode = (INSTRUCTIONS.indexOf(instruction[offset]) + 1);
         switch (instructOpCode) {
             //Branch to Label

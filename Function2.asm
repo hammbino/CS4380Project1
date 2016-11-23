@@ -13,6 +13,16 @@ FLAG        .INT    0
 OPDV        .INT    0
 ZERO        .INT    0
 ONE         .INT    1
+C0          .BYT   '0'
+C1          .BYT   '1'
+C2          .BYT   '2'
+C3          .BYT   '3'
+C4          .BYT   '4'
+C5          .BYT   '5'
+C6          .BYT   '6'
+C7          .BYT   '7'
+C8          .BYT   '8'
+C9          .BYT   '9'
 N           .BYT   'N'
 u           .BYT   'u'
 m           .BYT   'm'
@@ -85,12 +95,13 @@ NL          .BYT   '\n'
     ; Passed Parameters onto the Stack (Pass by Value)
     ; Set return address
                 MOV 	R4  PC	; PC incremented by 1 instruction
-                ADI	R4  36	; Compute Return Address (always a fixed amount)
-                STR	R4  FP  ; Return Address to the Beginning of the Frame
-                JMP	GETDATA	; Call Function
+                ADI	    R4  36	; Compute Return Address (always a fixed amount)
+                STR	    R4  FP  ; Return Address to the Beginning of the Frame
+                JMP	    GETDATA	; Call Function
 
-1M_WHILE        LDR     R0  ARR
-                LDR     R1  AT
+1M_WHILE        LDA     R0  ARR
+                LDB     R0  R0
+                LDB     R1  AT
                 CMP     R0  R1
                 BRZ     R0  1M_END_WHILE
                 LDR     R4  ARR
@@ -136,6 +147,7 @@ NL          .BYT   '\n'
                 STR     R4  CNT
 2M_WHILE        LDR     R1  DATA
                 BGT     R1  2M_END_WHILE
+                BLT     R1  UNDERFLOW
 2M_IF           LDR     R4  CNT
                 ADI     R4  -1
                 LDA     R5  ARR
@@ -151,12 +163,13 @@ NL          .BYT   '\n'
                 LDR     R1  CNT
                 ADI     R1  -2
                 STR     R1  CNT
-3M_WHILE        LDR     R1  FLAG
+3M_WHILE        LDR     R1  FLAG   ; //TODO CHECK LOGIC ON FLAG
                 SUB     R2  R2
-                LDR     R4  CNT
-                CMP     R4  R2
-                CMP     R1  R4
+                CMP     R1  R7
                 BNZ     R1  3M_IF
+                LDR     R4  CNT    ; R4 = CNT
+                CMP     R4  R2     ; IF (R4 == R2)
+                BRZ     R4  2M_ELSE
     ;OPD
     ; Test for overflow (SP <  SL)
                 MOV    	R5  SP
@@ -198,8 +211,8 @@ NL          .BYT   '\n'
                 MUL     R1  R2
                 STR     R1  TENTH
                 JMP     3M_WHILE
-3M_IF           LDR     R1  FLAG
-                BNZ     R1  2M_ELSE
+3M_IF           LDR     R1  FLAG ;//TODO CHECK LOGIC ON FLAG
+                BNZ     R1  2M_WHILE
                 LDB     R3  O
                 TRP     3
                 LDB     R3  p
@@ -230,7 +243,7 @@ NL          .BYT   '\n'
     ; Test for overflow (SP <  SL)
 2M_ELSE         MOV    	R5  SP
                 ADI	    R5  -8	; Adjust for space needed (Rtn Address & PFP)
-                CMP 	    R5  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
+                CMP 	R5  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
                 BLT	    R5  OVERFLOW
 
     ; Create Activation Record and invoke function GETDAT()
@@ -246,6 +259,7 @@ NL          .BYT   '\n'
                 ADI	R4  36	; Compute Return Address (always a fixed amount)
                 STR	R4  FP  ; Return Address to the Beginning of the Frame
                 JMP	GETDATA	; Call Function
+                JMP 2M_WHILE
 
 ;RESET
     ; Test for overflow (SP <  SL)
@@ -314,7 +328,6 @@ GETDATA   LDR   R4  CNT
 GD_IF     LDA   R0  ARR
           LDR   R1  CNT
           ADD   R0  R1
-          TRP   4
           STB   R3  R0
           ADI   R1  1
           STR   R1  CNT
@@ -392,14 +405,12 @@ GD_ENDIF    MOV  	SP  FP	  ; De-allocate Current Activation Record 	(SP = FP)
 FLUSH       SUB     R4  R4
             STR     R4  DATA
             LDA     R0  ARR
-            TRP     4
             STB     R3  R0
 FLUSH_WHILE LDR     R0  ARR
             LDB     R1  NL
             CMP     R0  R1
             BRZ     R0  END_FLUSH_WHILE
             LDA     R0  ARR
-            TRP     4
             STB     R3  R0
             JMP     FLUSH_WHILE
     ; Test for Underflow (SP > SB)
@@ -439,7 +450,7 @@ RESET       MOV     R5  SP  ; check for stack overflow for local variable k
             ADI     R0   1  ; increment ARR pointer
             STR     R4   R2
             JMP     R_FOR
- R_FOR_END  MOV    R0   FP
+ R_FOR_END  MOV     R0   FP
             ADI     R0   -8
             LDR     R1   R0
             STR     R1   DATA
@@ -478,12 +489,159 @@ OPD         MOV     R5  SP  ; check for stack overflow for local variable k
             STR	    R5  SP	; Place T initialized to 0 on the Stack
             ADI	    SP  -4
     ;if/else statements
-
-
-    ;if2 statement
-
+            SUB     R7  R7     ;Integer value to store
+            MOV     R0  FP
+            ADI     R0  -20
+IF0_OPD     LDB     R2  R0     ;//TODO Check what R0 is
+            LDB     R1  C0
+            CMP     R2  R1
+            BNZ     R2  IF1_OPD
+            MOV     R6  FP
+            ADI     R6  -24
+            STR     R7  R6
+            JMP     OPD_LAST_IF
+IF1_OPD     LDB     R2  R0
+            LDB     R1  C1
+            CMP     R2  R1
+            BNZ     R2  IF2_OPD
+            ADI     R7  1
+            MOV     R6  FP
+            ADI     R6  -24
+            STR     R7  R6
+            JMP     OPD_LAST_IF
+IF2_OPD     LDB     R2  R0
+            LDB     R1  C2
+            CMP     R2  R1
+            BNZ     R2  IF3_OPD
+            ADI     R7  2
+            MOV     R6  FP
+            ADI     R6  -24
+            STR     R7  R6
+            JMP     OPD_LAST_IF
+IF3_OPD     LDB     R2  R0
+            LDB     R1  C3
+            CMP     R2  R1
+            BNZ     R2  IF3_OPD
+            ADI     R7  3
+            MOV     R6  FP
+            ADI     R6  -24
+            STR     R7  R6
+            JMP     OPD_LAST_IF
+IF4_OPD     LDB     R2  R0
+            LDB     R1  C4
+            CMP     R2  R1
+            BNZ     R2  IF4_OPD
+            ADI     R7  4
+            MOV     R6  FP
+            ADI     R6  -24
+            STR     R7  R6
+            JMP     OPD_LAST_IF
+IF5_OPD     LDB     R2  R0
+            LDB     R1  C5
+            CMP     R2  R1
+            BNZ     R2  IF6_OPD
+            ADI     R7  5
+            MOV     R6  FP
+            ADI     R6  -24
+            STR     R7  R6
+            JMP     OPD_LAST_IF
+IF6_OPD     LDB     R2  R0
+            LDB     R1  C6
+            CMP     R2  R1
+            BNZ     R2  IF7_OPD
+            ADI     R7  6
+            MOV     R6  FP
+            ADI     R6  -24
+            STR     R7  R6
+            JMP     OPD_LAST_IF
+IF7_OPD     LDB     R2  R0
+            LDB     R1  C7
+            CMP     R2  R1
+            BNZ     R2  IF8_OPD
+            ADI     R7  7
+            MOV     R6  FP
+            ADI     R6  -24
+            STR     R7  R6
+            JMP     OPD_LAST_IF
+IF8_OPD     LDB     R2  R0
+            LDB     R1  C8
+            CMP     R2  R1
+            BNZ     R2  IF9_OPD
+            ADI     R7  8
+            MOV     R6  FP
+            ADI     R6  -24
+            STR     R7  R6
+            JMP     OPD_LAST_IF
+IF9_OPD     LDB     R2  R0
+            LDB     R1  C9
+            CMP     R2  R1
+            BNZ     R2  OPD_NOT_NUM
+            ADI     R7  9
+            MOV     R6  FP
+            ADI     R6  -24
+            STR     R7  R6
+            JMP     OPD_LAST_IF
+OPD_NOT_NUM LDB     R3  R0
+            TRP     3
+            LDB     R3  SPACE
+            TRP     3
+            LDB     R3  i
+            TRP     3
+            LDB     R3  s
+            TRP     3
+            LDB     R3  SPACE
+            TRP     3
+            LDB     R3  n
+            TRP     3
+            LDB     R3  o
+            TRP     3
+            LDB     R3  t
+            TRP     3
+            LDB     R3  SPACE
+            TRP     3
+            LDB     R3  a
+            TRP     3
+            LDB     R3  SPACE
+            TRP     3
+            LDB     R3  n
+            TRP     3
+            LDB     R3  u
+            TRP     3
+            LDB     R3  m
+            TRP     3
+            LDB     R3  b
+            TRP     3
+            LDB     R3  e
+            TRP     3
+            LDB     R3  r
+            TRP     3
+            LDB     R3  NL
+            TRP     3
+            ADI     R7  1
+            STR     R7  FLAG
+            JMP     OPD_RETURN
+    ;OPD_LAST_IF statement
+OPD_LAST_IF LDR     R7  FLAG
+            BNZ     R7  OPD_RETURN
+            MOV     R0  FP
+            ADI     R0  -12     ; R0 = s
+            MOV     R1  FP
+            ADI     R1  -16     ; R1 = k
+            MOV     R2  FP
+            ADI     R2  -24     ; R2 = t
+            LDB     R4  PLUS
+            CMP     RO  R4
+            BNZ     R0  OPDFIN_ELSE
+            MUL     R2  R1      ; t *= k
+            JMP     ADD_OPDV
+OPDFIN_ELSE SUB     R6  R6
+            ADI     R6  -1
+            MUL     R1  R6      ; k *= -1
+            MUL     R2  R1      ; t *= k
+ADD_OPDV    LDR     R4  OPDV    ; R4 = OPDV
+            ADD     R4  R2      ; OPDV += t
     ; Test for Underflow (SP > SB)
-            MOV  	SP  FP	  ; De-allocate Current Activation Record 	(SP = FP)
+OPD_RETURN  MOV  	SP  FP	  ; De-allocate Current Activation Record 	(SP = FP)
             MOV 	R5  SP
             CMP 	R5  SB	  ; 0 (SP=SB), Pos (SP > SB), Neg (SP < SB)
             BGT	    R5  UNDERFLOW

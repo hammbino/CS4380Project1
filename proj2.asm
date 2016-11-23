@@ -1,5 +1,4 @@
 SIZE     .INT     10
-
 ARR      .INT     10
          .INT     2
          .INT     3
