@@ -99,11 +99,11 @@ NL          .BYT   '\n'
                 STR	    R4  FP  ; Return Address to the Beginning of the Frame
                 JMP	    GETDATA	; Call Function
 1M_WHILE        LDA     R0  ARR
-TRP 99 102
+
                 LDB     R0  R0
                 LDB     R1  AT
                 CMP     R0  R1
-TRP 99 106
+
                 BRZ     R0  1M_END_WHILE
                 LDB     R4  ARR
                 LDB     R5  PLUS
@@ -136,7 +136,7 @@ TRP 99 106
                 JMP	    GETDATA	; Call Function
 
 1M_ELSE         LDA     R1  ARR
-TRP 99 138
+
                 SUB     R2  R2
                 ADI     R2  1
                 ADD     R1  R2      ; R1 = ARR[1]
@@ -150,7 +150,6 @@ TRP 99 138
                 ADI     R4  1
                 STR     R4  CNT
 2M_WHILE        LDR     R1  DATA
-TRP 99 152
                 BRZ     R1  2M_END_WHILE
 2M_IF           LDR     R4  CNT
                 ADI     R4  -1
@@ -159,22 +158,19 @@ TRP 99 152
                 LDB     R5  R5
                 LDB     R6  NL
                 CMP     R5  R6
-TRP 99 161
                 BNZ     R5  2M_ELSE
                 SUB     R1  R1
                 STR     R1  DATA
                 ADI     R1  1
                 STR     R1  TENTH
                 LDR     R1  CNT
-TRP 99 169
                 ADI     R1  -2
                 STR     R1  CNT
-TRP 99 172
 3M_WHILE        LDR     R2  FLAG
                 BNZ     R2  3M_IF   ; TODO CHECK LOGIC ON BRANCH
                 LDR     R4  CNT    ; R4 = CNT
                 BRZ     R4  3M_IF   ; TODO CHECK LOGIC ON BRANCH
-TRP 99 173
+
                ; CMP     R4  R2     ; IF (R4 == R2)
                ; BRZ     R4  2M_ELSE
 ;OPD
@@ -209,7 +205,7 @@ TRP 99 173
                 STR	    R4  FP      ; Return Address to the Beginning of the Frame
     ; Call function
                 JMP	    OPD	        ; Call Function ; TODO Correct to here
-TRP 99  208
+
                 LDR     R1  CNT
                 ADI     R1  -1
                 STR     R1  CNT
@@ -219,8 +215,8 @@ TRP 99  208
                 MUL     R1  R2
                 STR     R1  TENTH
                 JMP     3M_WHILE
-3M_IF           LDR     R1  FLAG ; TODO CHECK LOGIC ON FLAG
-TRP 99 219
+3M_IF           LDR     R1  FLAG ;//TODO CHECK LOGIC ON FLAG
+
                 BNZ     R1  2M_WHILE
                 LDB     R3  O
                 TRP     3
@@ -251,7 +247,7 @@ TRP 99 219
 ;GETDATA
     ; Test for overflow (SP <  SL)
 2M_ELSE         MOV    	R5  SP
-TRP 99 254
+
                 ADI	    R5  -8	; Adjust for space needed (Rtn Address & PFP)
                 CMP 	R5  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
                 BLT	    R5  OVERFLOW
@@ -274,7 +270,7 @@ TRP 99 254
 ;RESET
     ; Test for overflow (SP <  SL)
 2M_END_WHILE    MOV    	R5  SP
-TRP 99 275
+
                 ADI	    R5  -24	; Adjust for space needed (Rtn Address & PFP)
                 CMP     R5  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
                 BLT	    R5  OVERFLOW
@@ -306,7 +302,7 @@ TRP 99 275
                 JMP	RESET	; Call Function
 ;GETDATA
     ; Test for overflow (SP <  SL)
-    TRP 99 307
+
                 MOV    	R5  SP
                 ADI	    R5  -8	; Adjust for space needed (Rtn Address & PFP)
                 CMP 	    R5  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
@@ -412,22 +408,22 @@ GD_ENDIF    MOV  	SP  FP	  ; De-allocate Current Activation Record 	(SP = FP)
             ADI     R0  -4
             LDR     R0  FP     ; Point at Previous Activation Record 	(FP = PFP)
             JMR	    R5	       ; Jump to Return Address in Register R5
-;FLUSH DECLARATION ;TODO CHECK FUNCTION
-    ; Test for overflow (SP <  SL)
+;FLUSH DECLARATION ;TODO FUNCTION CHECKED
+    ; Test for overflow of local variables(SP <  SL)
     ; Put local variable on the stack
 FLUSH       SUB     R4  R4
             STR     R4  DATA
             LDA     R0  ARR
-TRP 99 421
-            TRP     4
-            STB     R3  R0
-FLUSH_WHILE LDR     R0  ARR
+            TRP     4            ;TRAP 4
+            STB     R3  ARR
+
+FLUSH_WHILE LDB     R0  ARR
             LDB     R1  NL
             CMP     R0  R1
+
             BRZ     R0  END_FLUSH_WHILE
-            LDA     R0  ARR
             TRP     4
-            STB     R3  R0
+            STB     R3  ARR
             JMP     FLUSH_WHILE
     ; Test for Underflow (SP > SB)
 END_FLUSH_WHILE MOV  	SP  FP	  ; De-allocate Current Activation Record 	(SP = FP)
@@ -452,7 +448,6 @@ RESET       MOV     R5  SP  ; check for stack overflow for local variable k
             SUB     R5  R5
             STR	    R5  SP	; Place K initialized to 0 on the Stack
             ADI	    SP  -4
-
     ; Initialize ARR
             LDA     R0  ARR
             LDR     R1  SIZE
@@ -484,6 +479,7 @@ RESET       MOV     R5  SP  ; check for stack overflow for local variable k
             ADI     R0   -20
             LDR     R1   R0     ; R1 = z (0)
             STR     R1   FLAG
+
     ; Test for Underflow (SP > SB)
             MOV  	SP  FP	  ; De-allocate Current Activation Record 	(SP = FP)
             MOV 	R5  SP
@@ -496,6 +492,7 @@ RESET       MOV     R5  SP  ; check for stack overflow for local variable k
             ADI     R0  -4
             LDR     R0  FP     ; Point at Previous Activation Record 	(FP = PFP)
             JMR	    R5	       ; Jump to Return Address in Register R5
+
 
 ;OPD DECLARATION
     ; Test for overflow (SP <  SL)
@@ -660,7 +657,6 @@ OPDFIN_ELSE SUB     R6  R6
             ADI     R6  -1
             MUL     R1  R6      ; k *= -1
             MUL     R2  R1      ; t *= k
-TRP 99 655
 ADD_OPDV    LDR     R4  OPDV    ; R4 = OPDV
             ADD     R4  R2      ; OPDV += t
             STR     R4  OPDV
