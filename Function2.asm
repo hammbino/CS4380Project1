@@ -197,6 +197,7 @@ NL          .BYT   '\n'
                 LDA     R4  ARR     ; Load ARR[0] to R4
                 LDR     R5  CNT     ; Load CNT to R5
                 ADD     R4  R5      ; Load ARR[CNT] into R4
+                LDB     R4  R4
                 STR	    R4  SP	    ; Place ARR[CNT] on the Stack
                 ADI	    SP  -4      ; Move SP
     ; Set return address
@@ -324,7 +325,7 @@ NL          .BYT   '\n'
                 JMP     1M_WHILE
 1M_END_WHILE    TRP   0
 
-;GETDATA DECLARATION ; TODO CHECK FUNCTION
+;GETDATA DECLARATION ; TODO CHECK FUNCTION (NUMBER TOO BIG IS BROKEN)
     ; Test for overflow (SP <  SL)
     ; Put local variable on the stack
 GETDATA   LDR   R4  CNT
@@ -354,12 +355,6 @@ GD_ELSE   LDB     R3  N
           TRP     3
           LDB     R3  SPACE
           TRP     3
-          LDB     R3  i
-          TRP     3
-          LDB     R3  s
-          TRP     3
-          LDB     R3  SPACE
-          TRP     3
           LDB     R3  t
           TRP     3
           LDB     R3  o
@@ -375,7 +370,6 @@ GD_ELSE   LDB     R3  N
           TRP     3
           LDB     R3  NL
           TRP     3
-
 ;FLUSH
     ; Test for overflow (SP <  SL)
           MOV    	R5  SP
@@ -396,6 +390,7 @@ GD_ELSE   LDB     R3  N
           ADI	R4  36	; Compute Return Address (always a fixed amount)
           STR	R4  FP  ; Return Address to the Beginning of the Frame
           JMP	FLUSH	; Call Function
+
     ; Test for Underflow (SP > SB)
 GD_ENDIF    MOV  	SP  FP	  ; De-allocate Current Activation Record 	(SP = FP)
             MOV 	R5  SP
@@ -408,6 +403,7 @@ GD_ENDIF    MOV  	SP  FP	  ; De-allocate Current Activation Record 	(SP = FP)
             ADI     R0  -4
             LDR     R0  FP     ; Point at Previous Activation Record 	(FP = PFP)
             JMR	    R5	       ; Jump to Return Address in Register R5
+
 ;FLUSH DECLARATION ;TODO FUNCTION CHECKED
     ; Test for overflow of local variables(SP <  SL)
     ; Put local variable on the stack
@@ -416,11 +412,9 @@ FLUSH       SUB     R4  R4
             LDA     R0  ARR
             TRP     4            ;TRAP 4
             STB     R3  ARR
-
 FLUSH_WHILE LDB     R0  ARR
             LDB     R1  NL
             CMP     R0  R1
-
             BRZ     R0  END_FLUSH_WHILE
             TRP     4
             STB     R3  ARR
@@ -537,7 +531,7 @@ IF2_OPD     LDB     R2  R0
 IF3_OPD     LDB     R2  R0
             LDR     R1  C3
             CMP     R2  R1
-            BNZ     R2  IF3_OPD
+            BNZ     R2  IF4_OPD
             ADI     R7  3
             MOV     R6  FP
             ADI     R6  -20
@@ -546,7 +540,7 @@ IF3_OPD     LDB     R2  R0
 IF4_OPD     LDB     R2  R0
             LDR     R1  C4
             CMP     R2  R1
-            BNZ     R2  IF4_OPD
+            BNZ     R2  IF5_OPD
             ADI     R7  4
             MOV     R6  FP
             ADI     R6  -20

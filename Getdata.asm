@@ -104,6 +104,7 @@ NL          .BYT   '\n'
                 STR 	R4  FP  ; Return Address to the Beginning of the Frame
                 JMP	    GETDATA	; Call Function
                 JMP     1M_END_IF
+
 1M_ELSE         LDA     R1  ARR
 
                 SUB     R2  R2
@@ -118,10 +119,11 @@ NL          .BYT   '\n'
                 LDR     R4  CNT
                 ADI     R4  1
                 STR     R4  CNT
-1M_END_IF   TRP 99 ;TODO Delete
+1M_END_IF       TRP 99 ;TODO delete
+                JMP     1M_WHILE
 1M_END_WHILE    TRP   0
 
-;GETDATA DECLARATION ; TODO CHECK FUNCTION
+;GETDATA DECLARATION ; TODO CHECK FUNCTION (NUMBER TOO BIG IS BROKEN)
     ; Test for overflow (SP <  SL)
     ; Put local variable on the stack
 GETDATA   LDR   R4  CNT
@@ -151,12 +153,6 @@ GD_ELSE   LDB     R3  N
           TRP     3
           LDB     R3  SPACE
           TRP     3
-          LDB     R3  i
-          TRP     3
-          LDB     R3  s
-          TRP     3
-          LDB     R3  SPACE
-          TRP     3
           LDB     R3  t
           TRP     3
           LDB     R3  o
@@ -172,7 +168,6 @@ GD_ELSE   LDB     R3  N
           TRP     3
           LDB     R3  NL
           TRP     3
-
 ;FLUSH
     ; Test for overflow (SP <  SL)
           MOV    	R5  SP
@@ -193,8 +188,6 @@ GD_ELSE   LDB     R3  N
           ADI	R4  36	; Compute Return Address (always a fixed amount)
           STR	R4  FP  ; Return Address to the Beginning of the Frame
           JMP	FLUSH	; Call Function
-TRP 99; TODO DELETE
-          TRP   0
 
     ; Test for Underflow (SP > SB)
 GD_ENDIF    MOV  	SP  FP	  ; De-allocate Current Activation Record 	(SP = FP)

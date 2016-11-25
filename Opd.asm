@@ -71,8 +71,6 @@ NL          .BYT   '\n'
                 ADD     R4  R5      ; Load ARR[CNT] into R4
                 LDB     R4  R4
                 STR	    R4  SP	    ; Place ARR[CNT] on the Stack
-MOV  R3 R4
-TRP  1
                 ADI	    SP  -4      ; Move SP
     ; Set return address
                 MOV 	R4  PC	    ; PC incremented by 1 instruction
@@ -100,15 +98,15 @@ OPD         MOV     R5  SP  ; check for stack overflow for local variable k
             MOV     R0  FP
             ADI     R0  -16
 IF0_OPD     LDB     R2  R0 ;
-MOV  R3 R2
+MOV  R3 R2 ;TODO GET R2 = 49
 TRP  1
             LDR     R1  C0
+MOV  R3 R1  ;TODO R1 = 0
+TRP  1
             CMP     R2  R1
             BNZ     R2  IF1_OPD
             MOV     R6  FP
             ADI     R6  -20
-MOV  R3 R6
-TRP  1
             STR     R7  R6
             JMP     OPD_LAST_IF
 IF1_OPD     LDB     R2  R0
@@ -134,7 +132,7 @@ IF2_OPD     LDB     R2  R0
 IF3_OPD     LDB     R2  R0
             LDR     R1  C3
             CMP     R2  R1
-            BNZ     R2  IF3_OPD
+            BNZ     R2  IF4_OPD
             ADI     R7  3
             MOV     R6  FP
             ADI     R6  -20
@@ -143,7 +141,7 @@ IF3_OPD     LDB     R2  R0
 IF4_OPD     LDB     R2  R0
             LDR     R1  C4
             CMP     R2  R1
-            BNZ     R2  IF4_OPD
+            BNZ     R2  IF5_OPD
             ADI     R7  4
             MOV     R6  FP
             ADI     R6  -20
@@ -195,6 +193,7 @@ IF9_OPD     LDB     R2  R0
             STR     R7  R6
             JMP     OPD_LAST_IF
 OPD_NOT_NUM LDB     R3  R0
+TRP 99
             TRP     3
             LDB     R3  SPACE
             TRP     3
