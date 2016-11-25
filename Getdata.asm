@@ -103,7 +103,7 @@ NL          .BYT   '\n'
                 ADI	    R4  36	; Compute Return Address (always a fixed amount)
                 STR 	R4  FP  ; Return Address to the Beginning of the Frame
                 JMP	    GETDATA	; Call Function
-
+                JMP     1M_END_IF
 1M_ELSE         LDA     R1  ARR
 
                 SUB     R2  R2
@@ -118,7 +118,7 @@ NL          .BYT   '\n'
                 LDR     R4  CNT
                 ADI     R4  1
                 STR     R4  CNT
-TRP 99 ;TODO Delete
+1M_END_IF   TRP 99 ;TODO Delete
 1M_END_WHILE    TRP   0
 
 ;GETDATA DECLARATION ; TODO CHECK FUNCTION
