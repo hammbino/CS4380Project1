@@ -1,28 +1,28 @@
-ARR         .BYT   '-'
-            .BYT   '1'
-            .BYT   '2'
-            .BYT   '3'
+ARR         .BYT   '+'
+            .BYT   'a'
+            .BYT   '5'
+            .BYT   '6'
             .BYT   '0'
             .BYT   '0'
             .BYT   '0' ;6
 SIZE        .INT    7  ;7
 CNT         .INT    1  ;11
-TENTH       .INT    0  ;15
+TENTH       .INT    1  ;15
 DATA        .INT    0  ;19
 FLAG        .INT    0  ;23
 OPDV        .INT    0  ;27
 ZERO        .INT    0  ;31
 ONE         .INT    1  ;35
-C0          .INT    0  ;39
-C1          .INT    1
-C2          .INT    2
-C3          .INT    3
-C4          .INT    4
-C5          .INT    5
-C6          .INT    6
-C7          .INT    7
-C8          .INT    8
-C9          .INT    9
+C0          .BYT    '0'  ;39
+C1          .BYT    '1'
+C2          .BYT    '2'
+C3          .BYT    '3'
+C4          .BYT    '4'
+C5          .BYT    '5'
+C6          .BYT    '6'
+C7          .BYT    '7'
+C8          .BYT    '8'
+C9          .BYT    '9'
 N           .BYT   'N'
 u           .BYT   'u'
 m           .BYT   'm'
@@ -97,12 +97,8 @@ OPD         MOV     R5  SP  ; check for stack overflow for local variable k
             SUB     R7  R7     ;Integer value to store  ; TODO Correct to here
             MOV     R0  FP
             ADI     R0  -16
-IF0_OPD     LDB     R2  R0 ;
-MOV  R3 R2 ;TODO GET R2 = 49
-TRP  1
-            LDR     R1  C0
-MOV  R3 R1  ;TODO R1 = 0
-TRP  1
+IF0_OPD     LDB     R2  R0
+            LDB     R1  C0
             CMP     R2  R1
             BNZ     R2  IF1_OPD
             MOV     R6  FP
@@ -110,18 +106,16 @@ TRP  1
             STR     R7  R6
             JMP     OPD_LAST_IF
 IF1_OPD     LDB     R2  R0
-            LDR     R1  C1
+            LDB     R1  C1
             CMP     R2  R1
             BNZ     R2  IF2_OPD
             ADI     R7  1
             MOV     R6  FP
             ADI     R6  -20
-MOV  R3 R6
-TRP  1
             STR     R7  R6
             JMP     OPD_LAST_IF
 IF2_OPD     LDB     R2  R0
-            LDR     R1  C2
+            LDB     R1  C2
             CMP     R2  R1
             BNZ     R2  IF3_OPD
             ADI     R7  2
@@ -130,7 +124,7 @@ IF2_OPD     LDB     R2  R0
             STR     R7  R6
             JMP     OPD_LAST_IF
 IF3_OPD     LDB     R2  R0
-            LDR     R1  C3
+            LDB     R1  C3
             CMP     R2  R1
             BNZ     R2  IF4_OPD
             ADI     R7  3
@@ -139,7 +133,7 @@ IF3_OPD     LDB     R2  R0
             STR     R7  R6
             JMP     OPD_LAST_IF
 IF4_OPD     LDB     R2  R0
-            LDR     R1  C4
+            LDB     R1  C4
             CMP     R2  R1
             BNZ     R2  IF5_OPD
             ADI     R7  4
@@ -148,7 +142,7 @@ IF4_OPD     LDB     R2  R0
             STR     R7  R6
             JMP     OPD_LAST_IF
 IF5_OPD     LDB     R2  R0
-            LDR     R1  C5
+            LDB     R1  C5
             CMP     R2  R1
             BNZ     R2  IF6_OPD
             ADI     R7  5
@@ -157,7 +151,7 @@ IF5_OPD     LDB     R2  R0
             STR     R7  R6
             JMP     OPD_LAST_IF
 IF6_OPD     LDB     R2  R0
-            LDR     R1  C6
+            LDB     R1  C6
             CMP     R2  R1
             BNZ     R2  IF7_OPD
             ADI     R7  6
@@ -166,7 +160,7 @@ IF6_OPD     LDB     R2  R0
             STR     R7  R6
             JMP     OPD_LAST_IF
 IF7_OPD     LDB     R2  R0
-            LDR     R1  C7
+            LDB     R1  C7
             CMP     R2  R1
             BNZ     R2  IF8_OPD
             ADI     R7  7
@@ -175,7 +169,7 @@ IF7_OPD     LDB     R2  R0
             STR     R7  R6
             JMP     OPD_LAST_IF
 IF8_OPD     LDB     R2  R0
-            LDR     R1  C8
+            LDB     R1  C8
             CMP     R2  R1
             BNZ     R2  IF9_OPD
             ADI     R7  8
@@ -184,7 +178,7 @@ IF8_OPD     LDB     R2  R0
             STR     R7  R6
             JMP     OPD_LAST_IF
 IF9_OPD     LDB     R2  R0
-            LDR     R1  C9
+            LDB     R1  C9
             CMP     R2  R1
             BNZ     R2  OPD_NOT_NUM
             ADI     R7  9
@@ -193,7 +187,6 @@ IF9_OPD     LDB     R2  R0
             STR     R7  R6
             JMP     OPD_LAST_IF
 OPD_NOT_NUM LDB     R3  R0
-TRP 99
             TRP     3
             LDB     R3  SPACE
             TRP     3
