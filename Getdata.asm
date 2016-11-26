@@ -106,7 +106,6 @@ NL          .BYT   '\n'
                 JMP     1M_END_IF
 
 1M_ELSE         LDA     R1  ARR
-
                 SUB     R2  R2
                 ADI     R2  1
                 ADD     R1  R2      ; R1 = ARR[1]
@@ -119,9 +118,14 @@ NL          .BYT   '\n'
                 LDR     R4  CNT
                 ADI     R4  1
                 STR     R4  CNT
-1M_END_IF       TRP 99 ;TODO delete
-                JMP     1M_WHILE
+1M_END_IF       JMP     2M_WHILE ;TODO SHOULD BE 2M WHILE
 1M_END_WHILE    TRP   0
+2M_WHILE        LDR     R0  DATA
+                SUB     R1  R1
+                CMP     R0  R1
+                BGT     R0  1M_WHILE
+
+
 
 ;GETDATA DECLARATION ; TODO CHECK FUNCTION (NUMBER TOO BIG IS BROKEN)
     ; Test for overflow (SP <  SL)
