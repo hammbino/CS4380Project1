@@ -82,7 +82,6 @@ LDR  R3  OPDV
 TRP  1
                 TRP 0
 
-
 ;OPD DECLARATION
     ; Test for overflow (SP <  SL)
 OPD         MOV     R5  SP  ; check for stack overflow for local variable k

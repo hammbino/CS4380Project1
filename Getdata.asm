@@ -1,10 +1,10 @@
-ARR         .BYT   '0' ;0
-            .BYT   '0'
-            .BYT   '0'
-            .BYT   '0'
-            .BYT   '0'
-            .BYT   '0'
-            .BYT   '0' ;6
+ARR         .BYT   '1' ;0
+            .BYT   '1'
+            .BYT   '1'
+            .BYT   '1'
+            .BYT   '1'
+            .BYT   '1'
+            .BYT   '1' ;6
 SIZE        .INT    7  ;7
 CNT         .INT    0  ;11
 TENTH       .INT    0  ;15

@@ -553,14 +553,6 @@ public class Main {
             for(int counter = (dataCharArray.length -1); counter >= 0; counter--){
                 inputStack.push(dataCharArray[counter]);
             }
-//            List<Character> cList = new ArrayList<Character>();
-//            for(char c : dataCharArray) {
-//                cList.add(c);
-//            }
-//            cList.
-//            for (char charArrElement : dataCharArray) {
-//                inputStack.push(charArrElement);
-//            }
         }
         try {
             REG[3] = inputStack.pop();
