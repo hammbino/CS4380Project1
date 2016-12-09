@@ -26,7 +26,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         Scanner fileReader = null;
-
+        Scanner input = new Scanner(System.in);
         //check to see if the program was run with the command line argument
         if (args.length < 1) {
             System.out.println("Error: No file was provided.");
@@ -260,6 +260,8 @@ public class Main {
                             break;
                         case 2:
                             //read an integer from standard in
+                            int num = input.nextInt();
+                            REG[3] = num;
                             break;
                         case 3:
                             char charOutput = (char) REG[3];
