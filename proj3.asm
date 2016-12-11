@@ -44,6 +44,7 @@ PLUS        .BYT   '+'
 MINUS       .BYT   '-'
 SPACE       .BYT   'space'
 NL          .BYT   '\n'
+PROMPT      .BYT    '>'
 
 ;RESET
     ; Test for overflow (SP <  SL)
@@ -76,6 +77,8 @@ NL          .BYT   '\n'
                 ADI	    R4  36	; Compute Return Address (always a fixed amount)
                 STR     R4  FP  ; Return Address to the Beginning of the Frame; Call function
                 JMP     RESET	; Call Function
+                LDB     R3  PROMPT
+                TRP     3
 
 ;GETDATA
     ; Test for overflow (SP <  SL)
@@ -109,6 +112,8 @@ NL          .BYT   '\n'
                 CMP     R5  R0
                 BRZ     R5  1M_IF
                 JMP     1M_ELSE
+                LDB     R3  PROMPT
+                TRP     3
 
 ;GETDATA //Get most significant byte
     ; Test for overflow (SP <  SL)
@@ -238,6 +243,8 @@ NL          .BYT   '\n'
                 LDB     R3  NL
                 TRP     3
                 JMP     2M_END_WHILE
+                LDB     R3  PROMPT
+                TRP     3
 ;GETDATA
     ; Test for overflow (SP <  SL)
 2M_ELSE         MOV    	R5  SP
@@ -292,6 +299,8 @@ NL          .BYT   '\n'
                 STR	R4  FP  ; Return Address to the Beginning of the Frame
     ; Call function
                 JMP	RESET	; Call Function
+                LDB     R3  PROMPT
+                TRP     3
 ;GETDATA
     ; Test for overflow (SP <  SL)
                 MOV    	R5  SP

@@ -12,17 +12,19 @@ public class Main {
 //    private final static int JUMP_SIZE = 8;
     private final static int INSTRUCT_SIZE = 12;
     private final static int NUM_REGISTERS = 13;
-    private static int MEM_LOCAL = 0;
-    private final static List<String> INSTRUCTIONS = Arrays.asList("JMP", "JMR", "BNZ", "BGT", "BLT", "BRZ", "MOV", "LDA", "STR", "LDR", "STB", "LDB", "ADD", "ADI", "SUB", "MUL", "DIV", "AND", "OR", "CMP", "TRP");
+    private final static List<String> INSTRUCTIONS = Arrays.asList("JMP", "JMR", "BNZ", "BGT", "BLT", "BRZ", "MOV", "LDA", "STR", "LDR", "STB", "LDB", "ADD", "ADI", "SUB", "MUL", "DIV", "AND", "OR", "CMP", "TRP", "RUN", "END", "BLK", "LCK", "ULK");
     private final static String INT_STRING = ".INT";
     private final static String BYTE_STRING = ".BYT";
-    static int [] REG= new int[NUM_REGISTERS];
     private final static List<String> REGISTERS = Arrays.asList("R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "PC", "SL", "SP", "FP", "SB");
-    static Map<String, Integer> SYMBOL_TABLE = new HashMap<>();
-    private static byte[] DATA = new byte[MEM_SIZE];
-    private static ByteBuffer BB = ByteBuffer.wrap(DATA).order(ByteOrder.LITTLE_ENDIAN);
+    private final static int [] REG= new int[NUM_REGISTERS];
+    private final static Map<String, Integer> SYMBOL_TABLE = new HashMap<>();
+    private final static byte[] DATA = new byte[MEM_SIZE];
+    private final static ByteBuffer BB = ByteBuffer.wrap(DATA).order(ByteOrder.LITTLE_ENDIAN);
+    private static int MEM_LOCAL = 0;
     private static int numberOfFilePasses = 0;
-    static Stack<Character> inputStack = new Stack<>();
+    private static Stack<Character> inputStack = new Stack<>();
+    private static int mutex = -1;
+    //TODO implement a QUEUE
 
     public static void main(String[] args) throws IOException {
         Scanner fileReader = null;
@@ -301,10 +303,33 @@ public class Main {
 //                    PC += INT_SIZE;
                     REG[instruct1] = BB.get(REG[instruct2]);
                     break;
+
+                case 26: //RUN
+                    //RUN REG, LABEL
+                    //TODO create a new thread and return ID to R3
+                    //TODO If there are no more Threads throw an exception (out of stack space)
+                    //TODO new thread will create a new thread stack and set PC for that stack to LABEL address
+                    //TODO add new thread ID to Queue
+                case 27: //END
+                    //END
+                    //TODO Check if thread is > 0
+                    //TODO remove current thread from Queue
+                case 28: //BLK
+                    //BLK
+                    //TODO check if thread == 0
+                    //TODO Loop until Queue is == 1 then continue
+                case 29: //LCK
+                    //LCK LABEL
+                    //TODO assign the thread number to the mutex
+                    //TODO Loop until MUTEX is -1 then MUTEX = LABEL(thread id)
+                case 30: //ULK
+                    //ULK LABEL
+                    //TODO Set mutex to if Mutex == LABEL(thread id)
                 default:
                     System.out.println("Instruction does not exist: " + INSTRUCTIONS.get(opCode + 1));
             }
         }
+        //TODO ADD CONTEXT SWITCHING
     }
     //--------------------------------
     //Assembler
@@ -466,6 +491,23 @@ public class Main {
                     BB.putInt(0);
                 }
                 break;
+
+            case 26: //RUN
+                //RUN REG, LABEL
+                BB.putInt(instructOpCode);
+            case 27: //END
+                //END
+                BB.putInt(instructOpCode);
+            case 28: //BLK
+                //BLK
+                BB.putInt(instructOpCode);
+            case 29: //LCK
+                //LCK LABEL
+                BB.putInt(instructOpCode);
+            case 30: //ULK
+                //ULK LABEL
+                BB.putInt(instructOpCode);
+
             default:
                 System.out.println("Instruction does not exist: " + instruction[offset]);
                 break;
@@ -496,7 +538,7 @@ public class Main {
 //            if (lineToCheck[1].equals("TRP") || lineToCheck[1].equals("JMP") || lineToCheck[1].equals("JMR") && lineToCheck.length <= 3) {
 //                MEM_LOCAL += TRAP_SIZE;
 //            } else {
-                MEM_LOCAL += INSTRUCT_SIZE;
+            MEM_LOCAL += INSTRUCT_SIZE;
 //            }
         }
     }
@@ -518,7 +560,7 @@ public class Main {
         return directive.equals(INT_STRING);
     }
     //First Pass
-    static void firstPass(Scanner fileReader) {
+    private static void firstPass(Scanner fileReader) {
         //------------------------------
         //check if it is the first pass
         //------------------------------
@@ -546,7 +588,7 @@ public class Main {
         }
     }
     //Trap 4 works like getChar()
-    static void trap4() {
+    private static void trap4() {
         if (inputStack.empty()) {
             inputStack.push('\n');
             Scanner inputScanner = new Scanner(System.in);
@@ -561,5 +603,6 @@ public class Main {
         } catch (EmptyStackException e) {
             System.out.println("empty stack");
         }
+
     }
 }
