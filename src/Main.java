@@ -12,6 +12,7 @@ public class Main {
 //    private final static int JUMP_SIZE = 8;
     private final static int INSTRUCT_SIZE = 12;
     private final static int NUM_REGISTERS = 13;
+    private final static int NUM_THREADS = 5;
     private final static List<String> INSTRUCTIONS = Arrays.asList("JMP", "JMR", "BNZ", "BGT", "BLT", "BRZ", "MOV", "LDA", "STR", "LDR", "STB", "LDB", "ADD", "ADI", "SUB", "MUL", "DIV", "AND", "OR", "CMP", "TRP", "RUN", "END", "BLK", "LCK", "ULK");
     private final static String INT_STRING = ".INT";
     private final static String BYTE_STRING = ".BYT";
@@ -24,9 +25,15 @@ public class Main {
     private static int numberOfFilePasses = 0;
     private static Stack<Character> inputStack = new Stack<>();
     private static int mutex = -1;
-    //TODO implement a QUEUE
+    private final static int [] THREADS= new int[] {0, 0, 0, 0, 0};
+    private static int threadNum = 0;
+    private static int THREAD_STACK_SIZE;
+    private static int currentThreadID = 0;
+    private static int endProgram;
+    private static Queue<Integer> queue = new LinkedList<>();
+    private static boolean endFlag = true;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         Scanner fileReader = null;
         Scanner input = new Scanner(System.in);
         //check to see if the program was run with the command line argument
@@ -102,16 +109,20 @@ public class Main {
                     System.out.println("ERROR: No instructions were given");
                     System.exit(0);   // TERMINATE THE PROGRAM
                 }
-                REG[REGISTERS.indexOf("SL")] = (MEM_SIZE - BB.remaining());
+//                REG[REGISTERS.indexOf("SL")] = (MEM_SIZE - BB.remaining());
+                THREAD_STACK_SIZE = (MEM_SIZE - BB.remaining())/NUM_THREADS;
+                endProgram = BB.position();
+                queue.add(currentThreadID);
+                saveRegisters(currentThreadID);
+                getRegisters();
             }
-
             fileReader.close();
             numberOfFilePasses++;
         }
         //--------------------------------
         //Virtual Machine
         //--------------------------------
-        int endProgram = BB.position();
+
         while(REG[REGISTERS.indexOf("PC")] < endProgram) {
             int opCode = BB.getInt(REG[REGISTERS.indexOf("PC")]);
             REG[REGISTERS.indexOf("PC")] += INT_SIZE;
@@ -310,27 +321,55 @@ public class Main {
                     //TODO If there are no more Threads throw an exception (out of stack space)
                     //TODO new thread will create a new thread stack and set PC for that stack to LABEL address
                     //TODO add new thread ID to Queue
+                    threadNum++;
+                    //putting this in to possibly recreate threads once thread has ended
+                    if (THREADS[threadNum] == 0) {
+                        THREADS[threadNum] = threadNum;
+                    }
+                    if (threadNum > NUM_THREADS) {
+                        System.out.println("To many threads created");
+                        throw new Exception("To many threads created");
+                    }
+
+                    REG[REGISTERS.indexOf("R3")] = threadNum;
+                    saveRegisters(currentThreadID);
+                    REG[REGISTERS.indexOf("PC")] = instruct1;
+                    saveRegisters(threadNum);
+                    queue.add(threadNum);
+                    getRegisters();
+
                 case 27: //END
-                    //END
-                    //TODO Check if thread is > 0
-                    //TODO remove current thread from Queue
+                    if (currentThreadID != 0) {
+                        endFlag = false;
+                    }
                 case 28: //BLK
-                    //BLK
-                    //TODO check if thread == 0
-                    //TODO Loop until Queue is == 1 then continue
+                    if (queue.size() > 1) {
+                        REG[REGISTERS.indexOf("PC")] =  REG[REGISTERS.indexOf("PC")] - 12;
+                    }
+                    if (queue.size() < 0) {
+                        System.out.println("problem with Queue."); //TODO can probably delete this
+                    }
                 case 29: //LCK
-                    //LCK LABEL
-                    //TODO assign the thread number to the mutex
-                    //TODO Loop until MUTEX is -1 then MUTEX = LABEL(thread id)
+                    if(mutex == -1) {
+                        mutex = currentThreadID;
+                    }
+                    else {
+                        REG[REGISTERS.indexOf("PC")] =  REG[REGISTERS.indexOf("PC")] - 12;
+
+                    }
                 case 30: //ULK
-                    //ULK LABEL
-                    //TODO Set mutex to if Mutex == LABEL(thread id)
+                    if(mutex == currentThreadID) {
+                        mutex = -1;
+                    }
                 default:
                     System.out.println("Instruction does not exist: " + INSTRUCTIONS.get(opCode + 1));
             }
         }
-        //TODO ADD CONTEXT SWITCHING
+        if (endFlag)
+            saveRegisters(currentThreadID);
+        getRegisters();
     }
+
     //--------------------------------
     //Assembler
     //--------------------------------
@@ -495,6 +534,8 @@ public class Main {
             case 26: //RUN
                 //RUN REG, LABEL
                 BB.putInt(instructOpCode);
+                BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
+                BB.putInt(SYMBOL_TABLE.get(instruction[2 + offset]));
             case 27: //END
                 //END
                 BB.putInt(instructOpCode);
@@ -504,10 +545,11 @@ public class Main {
             case 29: //LCK
                 //LCK LABEL
                 BB.putInt(instructOpCode);
+                BB.putInt(SYMBOL_TABLE.get(instruction[1 + offset]));
             case 30: //ULK
                 //ULK LABEL
                 BB.putInt(instructOpCode);
-
+                BB.putInt(SYMBOL_TABLE.get(instruction[1 + offset]));
             default:
                 System.out.println("Instruction does not exist: " + instruction[offset]);
                 break;
@@ -542,6 +584,7 @@ public class Main {
 //            }
         }
     }
+
     //Checks if string is an instruction, if not an instruction then a label
     private static boolean isInstruction (String valueToCheck) {
         for (String instruction : INSTRUCTIONS) {
@@ -551,14 +594,17 @@ public class Main {
         }
         return false;
     }
+
     //check if directive is a byte
     private static boolean isByte (String directive) {
         return directive.equals(BYTE_STRING);
     }
+
     //check if directive is an int
     private static boolean isInt (String directive) {
         return directive.equals(INT_STRING);
     }
+
     //First Pass
     private static void firstPass(Scanner fileReader) {
         //------------------------------
@@ -587,6 +633,7 @@ public class Main {
             }
         }
     }
+
     //Trap 4 works like getChar()
     private static void trap4() {
         if (inputStack.empty()) {
@@ -603,6 +650,71 @@ public class Main {
         } catch (EmptyStackException e) {
             System.out.println("empty stack");
         }
+    }
 
+    private static void saveRegisters(int currentThreadID) {
+        int curThreadSB = (REG[REGISTERS.indexOf("SB")] - (THREAD_STACK_SIZE * currentThreadID));
+        int tsInitializer = (REG[REGISTERS.indexOf("SB")] - (THREAD_STACK_SIZE * currentThreadID));
+        int curThreadSL = (REG[REGISTERS.indexOf("SB")] - (THREAD_STACK_SIZE * currentThreadID) - THREAD_STACK_SIZE);
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("PC")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R0")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R1")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R2")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R3")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R4")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R5")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R6")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R7")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, curThreadSL);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, tsInitializer + 12);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, tsInitializer + 12);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, curThreadSB);
+        queue.add(currentThreadID);
+        currentThreadID = queue.remove();
+    }
+
+    private static void getRegisters() {
+        if(!endFlag) {
+            currentThreadID = queue.remove();
+            endFlag = true;
+        }
+        int tsGetter = (REG[REGISTERS.indexOf("SB")] - (THREAD_STACK_SIZE * currentThreadID));
+        REG[REGISTERS.indexOf("PC")] = BB.getInt(tsGetter);
+        tsGetter -= 4;
+        REG[REGISTERS.indexOf("R0")] = BB.getInt(tsGetter);
+        tsGetter -= 4;
+        REG[REGISTERS.indexOf("R1")] = BB.getInt(tsGetter);
+        tsGetter -= 4;
+        REG[REGISTERS.indexOf("R2")] = BB.getInt(tsGetter);
+        tsGetter -= 4;
+        REG[REGISTERS.indexOf("R3")] = BB.getInt(tsGetter);
+        tsGetter -= 4;
+        REG[REGISTERS.indexOf("R4")] = BB.getInt(tsGetter);
+        tsGetter -= 4;
+        REG[REGISTERS.indexOf("R5")] = BB.getInt(tsGetter);
+        tsGetter -= 4;
+        REG[REGISTERS.indexOf("R6")] = BB.getInt(tsGetter);
+        tsGetter -= 4;
+        REG[REGISTERS.indexOf("R7")] = BB.getInt(tsGetter);
+        tsGetter -= 4;
+        REG[REGISTERS.indexOf("SL")] = BB.getInt(tsGetter);
+        tsGetter -= 4;
+        REG[REGISTERS.indexOf("SP")] = BB.getInt(tsGetter);
+        tsGetter -= 4;
+        REG[REGISTERS.indexOf("FP")] = BB.getInt(tsGetter);
+        tsGetter -= 4;
+        REG[REGISTERS.indexOf("SB")] = BB.getInt(tsGetter);
     }
 }

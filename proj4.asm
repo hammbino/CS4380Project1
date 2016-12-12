@@ -63,13 +63,9 @@ START       LDB     R3  PROMPT  ;Put a prompt on the screen
             MOV     R7  R3      ;Store the input value into R7
             LDA     R5  ARR     ;Load the Array R5
             LDR     R6  CNT     ;Load the current array position into R6
-            ;TRP     99  66
             ADD     R5  R6      ;Move to the correct position in the array
-            ;TRP     99  68
             STR     R7  R5
-            ;TRP     99 70
             ADI     R6  4
-           ; TRP     99 72
             STR     R6  CNT
 ;FACTORIAL
     ; Test for overflow (SP <  SL)
@@ -166,7 +162,9 @@ WHILEARR    LDA     R1  ARR
             MOV     R3  R5
             CMP     R3  R6
             BLT     R3  WHILEARR
-PART3       JMP     FINISH
+PART3       JMP FINISH
+            ;SUB     R5  R5
+            ;STR     R5  CNT
 
 FINISH      TRP     0
 
