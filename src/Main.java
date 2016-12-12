@@ -314,7 +314,6 @@ public class Main {
 //                    PC += INT_SIZE;
                     REG[instruct1] = BB.get(REG[instruct2]);
                     break;
-
                 case 26: //RUN
                     //RUN REG, LABEL
                     //TODO create a new thread and return ID to R3
@@ -330,39 +329,43 @@ public class Main {
                         System.out.println("To many threads created");
                         throw new Exception("To many threads created");
                     }
-
-                    REG[REGISTERS.indexOf("R3")] = threadNum;
+                    REG[instruct1] = threadNum;
                     saveRegisters(currentThreadID);
                     REG[REGISTERS.indexOf("PC")] = instruct1;
                     saveRegisters(threadNum);
                     queue.add(threadNum);
                     getRegisters();
-
+                    break;
                 case 27: //END
                     if (currentThreadID != 0) {
                         endFlag = false;
                     }
+                    break;
                 case 28: //BLK
-                    if (queue.size() > 1) {
+                    if (currentThreadID == 0 && queue.size() > 1) {
                         REG[REGISTERS.indexOf("PC")] =  REG[REGISTERS.indexOf("PC")] - 12;
                     }
                     if (queue.size() < 0) {
                         System.out.println("problem with Queue."); //TODO can probably delete this
                     }
+                    break;
                 case 29: //LCK
                     if(mutex == -1) {
                         mutex = currentThreadID;
                     }
-                    else {
-                        REG[REGISTERS.indexOf("PC")] =  REG[REGISTERS.indexOf("PC")] - 12;
-
-                    }
+//                    else {
+//                        REG[REGISTERS.indexOf("PC")] =  REG[REGISTERS.indexOf("PC")] - 12;
+//
+//                    }
+                    break;
                 case 30: //ULK
                     if(mutex == currentThreadID) {
                         mutex = -1;
                     }
+                    break;
                 default:
                     System.out.println("Instruction does not exist: " + INSTRUCTIONS.get(opCode + 1));
+                    break;
             }
         }
         if (endFlag)
@@ -530,26 +533,42 @@ public class Main {
                     BB.putInt(0);
                 }
                 break;
-
-            case 26: //RUN
+            case 22: //RUN
                 //RUN REG, LABEL
-                BB.putInt(instructOpCode);
+                BB.putInt(instructOpCode + 4);
                 BB.putInt(REGISTERS.indexOf(instruction[1 + offset]));
                 BB.putInt(SYMBOL_TABLE.get(instruction[2 + offset]));
-            case 27: //END
+                break;
+            case 23: //END
                 //END
+                instructOpCode += 4;
                 BB.putInt(instructOpCode);
-            case 28: //BLK
+                BB.putInt(0);
+                BB.putInt(0);
+                break;
+            case 24: //BLK
                 //BLK
+                instructOpCode += 4;
                 BB.putInt(instructOpCode);
-            case 29: //LCK
-                //LCK LABEL
+                BB.putInt(0);
+                BB.putInt(0);
+                break;
+            case 25: //LCK
+                //LCK LABEL\
+                instructOpCode += 4;
                 BB.putInt(instructOpCode);
-                BB.putInt(SYMBOL_TABLE.get(instruction[1 + offset]));
-            case 30: //ULK
+//                BB.putInt(SYMBOL_TABLE.get(instruction[1 + offset]));
+                BB.putInt(0);
+                BB.putInt(0);
+                break;
+            case 26: //ULK
                 //ULK LABEL
+                instructOpCode += 4;
                 BB.putInt(instructOpCode);
-                BB.putInt(SYMBOL_TABLE.get(instruction[1 + offset]));
+//                BB.putInt(SYMBOL_TABLE.get(instruction[1 + offset]));
+                BB.putInt(0);
+                BB.putInt(0);
+                break;
             default:
                 System.out.println("Instruction does not exist: " + instruction[offset]);
                 break;

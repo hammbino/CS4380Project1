@@ -60,6 +60,7 @@ START       LDB     R3  PROMPT  ;Put a prompt on the screen
             TRP     3
             TRP     2           ;Get integer input from console
             BRZ     R3  PARR    ;If zero is entered print the array
+            LCK
             MOV     R7  R3      ;Store the input value into R7
             LDA     R5  ARR     ;Load the Array R5
             LDR     R6  CNT     ;Load the current array position into R6
@@ -67,6 +68,7 @@ START       LDB     R3  PROMPT  ;Put a prompt on the screen
             STR     R7  R5
             ADI     R6  4
             STR     R6  CNT
+            ULK
 ;FACTORIAL
     ; Test for overflow (SP <  SL)
             MOV    	R0  SP
@@ -126,17 +128,19 @@ START       LDB     R3  PROMPT  ;Put a prompt on the screen
             TRP     3
             LDR     R3  SP
             TRP     1
+            LCK
             LDA     R5  ARR     ;Load the Array R5
             LDR     R6  CNT     ;Load the current array position into R6
             ADD     R5  R6      ;Move to the correct position in the array
             STR     R3  R5      ;Store the Y vale into the open position in array
             ADI     R6  4
             STR     R6  CNT
+            ULK
             LDB     R3  NL
             TRP     3
-            ;END        ;//TODO implement in VM
+            END
     ; Loop to factorial function until zero is pressed
-            JMP     START
+            JMP     START //TODO difference here
 PARR        SUB     R5  R5      ;Front of the array
             LDR     R6  CNT     ;Back of the array
             BRZ     R6  PART3
@@ -162,10 +166,22 @@ WHILEARR    LDA     R1  ARR
             MOV     R3  R5
             CMP     R3  R6
             BLT     R3  WHILEARR
-PART3       JMP FINISH
-            ;SUB     R5  R5
-            ;STR     R5  CNT
-
+PART3       SUB     R5  R5          ;JMP FINISH
+            STR     R5  CNT
+            LDB R3 NL
+            TRP 3
+            TRP 3
+            LCK
+PART3WHILE  LDB     R3  PROMPT  ;Put a prompt on the screen
+            TRP     3
+            LDB     R3  SPACE
+            TRP     3
+            TRP     2           ;Get integer input from console
+            BRZ     R3  PART3END;TODO Different
+            RUN     R7  FACTO
+            JMP     PART3WHILE
+PART3END    ULK
+            BLK
 FINISH      TRP     0
 
 ;FACTO DECLARATION
@@ -229,5 +245,4 @@ OVERFLOW    SUB R3 R3
 ; UNDERFLOW DECLARATION
 UNDERFLOW   SUB R3 R3
             ADI R3 8
-            TRP 1
-            TRP 0
+           
