@@ -32,6 +32,7 @@ public class Main {
     private static int endProgram;
     private static Queue<Integer> queue = new LinkedList<>();
     private static boolean endFlag = true;
+    private static int SB;
 
     public static void main(String[] args) throws Exception {
         Scanner fileReader = null;
@@ -42,6 +43,7 @@ public class Main {
             System.exit(9);     // TERMINATE THE PROGRAM
         }
 
+        SB = (MEM_SIZE - INT_SIZE);
         REG[REGISTERS.indexOf("SB")] = (MEM_SIZE - INT_SIZE); //To account for BB starting a 0
         REG[REGISTERS.indexOf("SP")] = (MEM_SIZE - INT_SIZE);
         REG[REGISTERS.indexOf("FP")] = (MEM_SIZE - INT_SIZE);
@@ -109,11 +111,10 @@ public class Main {
                     System.out.println("ERROR: No instructions were given");
                     System.exit(0);   // TERMINATE THE PROGRAM
                 }
-//                REG[REGISTERS.indexOf("SL")] = (MEM_SIZE - BB.remaining());
+                REG[REGISTERS.indexOf("SL")] = (MEM_SIZE - BB.remaining());
                 THREAD_STACK_SIZE = (MEM_SIZE - BB.remaining())/NUM_THREADS;
                 endProgram = BB.position();
-                queue.add(currentThreadID);
-                saveRegisters(currentThreadID);
+                createThreadStack(currentThreadID);
                 getRegisters();
             }
             fileReader.close();
@@ -263,7 +264,7 @@ public class Main {
                 case 21: //TRP
                     switch (instruct1) {
                         case 0:
-//                            System.out.println("\n\nClosing Program! Trap 0 encountered");
+                            System.out.println("\n\nClosing Program! Trap 0 encountered");
                             System.exit(0);
                             break;
                         case 1:
@@ -322,7 +323,7 @@ public class Main {
                     //TODO add new thread ID to Queue
                     threadNum++;
                     //putting this in to possibly recreate threads once thread has ended
-                    if (THREADS[threadNum] == 0) {
+                    if (THREADS[threadNum] == 0 && threadNum < NUM_THREADS) {
                         THREADS[threadNum] = threadNum;
                     }
                     if (threadNum > NUM_THREADS) {
@@ -330,11 +331,7 @@ public class Main {
                         throw new Exception("To many threads created");
                     }
                     REG[instruct1] = threadNum;
-                    saveRegisters(currentThreadID);
-                    REG[REGISTERS.indexOf("PC")] = instruct1;
-                    saveRegisters(threadNum);
-                    queue.add(threadNum);
-                    getRegisters();
+                    createThreadStack(threadNum);
                     break;
                 case 27: //END
                     if (currentThreadID != 0) {
@@ -353,10 +350,9 @@ public class Main {
                     if(mutex == -1) {
                         mutex = currentThreadID;
                     }
-//                    else {
-//                        REG[REGISTERS.indexOf("PC")] =  REG[REGISTERS.indexOf("PC")] - 12;
-//
-//                    }
+                    else {
+                        REG[REGISTERS.indexOf("PC")] =  REG[REGISTERS.indexOf("PC")] - 12;
+                    }
                     break;
                 case 30: //ULK
                     if(mutex == currentThreadID) {
@@ -367,10 +363,10 @@ public class Main {
                     System.out.println("Instruction does not exist: " + INSTRUCTIONS.get(opCode + 1));
                     break;
             }
+            if (endFlag)
+                saveRegisters(currentThreadID);
+            getRegisters();
         }
-        if (endFlag)
-            saveRegisters(currentThreadID);
-        getRegisters();
     }
 
     //--------------------------------
@@ -671,12 +667,9 @@ public class Main {
         }
     }
 
-    private static void saveRegisters(int currentThreadID) {
-        int curThreadSB = (REG[REGISTERS.indexOf("SB")] - (THREAD_STACK_SIZE * currentThreadID));
-        int tsInitializer = (REG[REGISTERS.indexOf("SB")] - (THREAD_STACK_SIZE * currentThreadID));
-        int curThreadSL = (REG[REGISTERS.indexOf("SB")] - (THREAD_STACK_SIZE * currentThreadID) - THREAD_STACK_SIZE);
-        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("PC")]);
-        tsInitializer -= 4;
+    private static void createThreadStack(int threadID) {
+        int tsInitializer = (SB - (THREAD_STACK_SIZE * threadID));
+        int curThreadSL = (SB - (THREAD_STACK_SIZE * threadID) - THREAD_STACK_SIZE);
         BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R0")]);
         tsInitializer -= 4;
         BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R1")]);
@@ -693,14 +686,46 @@ public class Main {
         tsInitializer -= 4;
         BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R7")]);
         tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("PC")]);
+        tsInitializer -= 4;
         BB.putInt(tsInitializer, curThreadSL);
         tsInitializer -= 4;
-        BB.putInt(tsInitializer, tsInitializer + 12);
+        BB.putInt(tsInitializer, (tsInitializer - 12));
         tsInitializer -= 4;
-        BB.putInt(tsInitializer, tsInitializer + 12);
+        BB.putInt(tsInitializer, (tsInitializer - 8));
         tsInitializer -= 4;
-        BB.putInt(tsInitializer, curThreadSB);
+        BB.putInt(tsInitializer, (tsInitializer - 4));
         queue.add(currentThreadID);
+    }
+
+    private static void saveRegisters(int threadID) {
+        int tsInitializer = (SB - (THREAD_STACK_SIZE * threadID));
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R0")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R1")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R2")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R3")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R4")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R5")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R6")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R7")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("PC")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("SL")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("SP")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("FP")]);
+        tsInitializer -= 4;
+        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("SB")]);
+        queue.add(threadID);
         currentThreadID = queue.remove();
     }
 
@@ -709,9 +734,7 @@ public class Main {
             currentThreadID = queue.remove();
             endFlag = true;
         }
-        int tsGetter = (REG[REGISTERS.indexOf("SB")] - (THREAD_STACK_SIZE * currentThreadID));
-        REG[REGISTERS.indexOf("PC")] = BB.getInt(tsGetter);
-        tsGetter -= 4;
+        int tsGetter = (SB - (THREAD_STACK_SIZE * currentThreadID));
         REG[REGISTERS.indexOf("R0")] = BB.getInt(tsGetter);
         tsGetter -= 4;
         REG[REGISTERS.indexOf("R1")] = BB.getInt(tsGetter);
@@ -727,6 +750,8 @@ public class Main {
         REG[REGISTERS.indexOf("R6")] = BB.getInt(tsGetter);
         tsGetter -= 4;
         REG[REGISTERS.indexOf("R7")] = BB.getInt(tsGetter);
+        tsGetter -= 4;
+        REG[REGISTERS.indexOf("PC")] = BB.getInt(tsGetter);
         tsGetter -= 4;
         REG[REGISTERS.indexOf("SL")] = BB.getInt(tsGetter);
         tsGetter -= 4;
