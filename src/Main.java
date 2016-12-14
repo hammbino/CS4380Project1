@@ -316,11 +316,6 @@ public class Main {
                     REG[instruct1] = BB.get(REG[instruct2]);
                     break;
                 case 26: //RUN
-                    //RUN REG, LABEL
-                    //TODO create a new thread and return ID to R3
-                    //TODO If there are no more Threads throw an exception (out of stack space)
-                    //TODO new thread will create a new thread stack and set PC for that stack to LABEL address
-                    //TODO add new thread ID to Queue
                     threadNum++;
                     //putting this in to possibly recreate threads once thread has ended
                     if (THREADS[threadNum] == 0 && threadNum < NUM_THREADS) {
@@ -345,22 +340,23 @@ public class Main {
                         REG[REGISTERS.indexOf("PC")] =  REG[REGISTERS.indexOf("PC")] - 12;
                     }
                     if (queue.size() < 0) {
-                        System.out.println("problem with Queue."); //TODO can probably delete this
+                        System.out.println("problem with Queue.");
                     }
                     break;
                 case 29: //LCK
-                    //TODO add label
                     if(mutex == -1) {
                         mutex = currentThreadID;
+                        BB.putInt(instruct1, currentThreadID);//putInt(int index, int value)
+
                     }
                     else if (mutex != currentThreadID){
                         REG[REGISTERS.indexOf("PC")] =  REG[REGISTERS.indexOf("PC")] - 12;
                     }
                     break;
                 case 30: //ULK
-                    //TODO add label
                     if(mutex == currentThreadID) {
                         mutex = -1;
+                        BB.putInt(instruct1, -1);//putInt(int index, int value)
                     }
                     break;
                 default:
@@ -557,16 +553,14 @@ public class Main {
                 //LCK LABEL\
                 instructOpCode += 4;
                 BB.putInt(instructOpCode);
-//                BB.putInt(SYMBOL_TABLE.get(instruction[1 + offset]));
-                BB.putInt(0);
+                BB.putInt(SYMBOL_TABLE.get(instruction[1 + offset]));
                 BB.putInt(0);
                 break;
             case 26: //ULK
                 //ULK LABEL
                 instructOpCode += 4;
                 BB.putInt(instructOpCode);
-//                BB.putInt(SYMBOL_TABLE.get(instruction[1 + offset]));
-                BB.putInt(0);
+                BB.putInt(SYMBOL_TABLE.get(instruction[1 + offset]));
                 BB.putInt(0);
                 break;
             default:
