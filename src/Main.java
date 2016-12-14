@@ -114,7 +114,7 @@ public class Main {
                 REG[REGISTERS.indexOf("SL")] = (MEM_SIZE - BB.remaining());
                 THREAD_STACK_SIZE = (MEM_SIZE - BB.remaining())/NUM_THREADS;
                 endProgram = BB.position();
-                createThreadStack(currentThreadID);
+                createThreadStack(currentThreadID, REG[REGISTERS.indexOf("PC")]);
                 getRegisters();
             }
             fileReader.close();
@@ -264,7 +264,7 @@ public class Main {
                 case 21: //TRP
                     switch (instruct1) {
                         case 0:
-                            System.out.println("\n\nClosing Program! Trap 0 encountered");
+//                            System.out.println("\n\nClosing Program! Trap 0 encountered");
                             System.exit(0);
                             break;
                         case 1:
@@ -326,12 +326,14 @@ public class Main {
                     if (THREADS[threadNum] == 0 && threadNum < NUM_THREADS) {
                         THREADS[threadNum] = threadNum;
                     }
-                    if (threadNum > NUM_THREADS) {
+                    if (threadNum >= NUM_THREADS) {
                         System.out.println("To many threads created");
                         throw new Exception("To many threads created");
                     }
+                    saveRegisters(currentThreadID);
                     REG[instruct1] = threadNum;
-                    createThreadStack(threadNum);
+                    createThreadStack(threadNum, instruct2);
+                    getRegisters();
                     break;
                 case 27: //END
                     if (currentThreadID != 0) {
@@ -339,7 +341,7 @@ public class Main {
                     }
                     break;
                 case 28: //BLK
-                    if (currentThreadID == 0 && queue.size() > 1) {
+                    if (currentThreadID == 0 && queue.size() > 0) {
                         REG[REGISTERS.indexOf("PC")] =  REG[REGISTERS.indexOf("PC")] - 12;
                     }
                     if (queue.size() < 0) {
@@ -347,14 +349,16 @@ public class Main {
                     }
                     break;
                 case 29: //LCK
+                    //TODO add label
                     if(mutex == -1) {
                         mutex = currentThreadID;
                     }
-                    else {
+                    else if (mutex != currentThreadID){
                         REG[REGISTERS.indexOf("PC")] =  REG[REGISTERS.indexOf("PC")] - 12;
                     }
                     break;
                 case 30: //ULK
+                    //TODO add label
                     if(mutex == currentThreadID) {
                         mutex = -1;
                     }
@@ -667,7 +671,7 @@ public class Main {
         }
     }
 
-    private static void createThreadStack(int threadID) {
+    private static void createThreadStack(int threadID, int lblLocal) {
         int tsInitializer = (SB - (THREAD_STACK_SIZE * threadID));
         int curThreadSL = (SB - (THREAD_STACK_SIZE * threadID) - THREAD_STACK_SIZE);
         BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R0")]);
@@ -686,7 +690,7 @@ public class Main {
         tsInitializer -= 4;
         BB.putInt(tsInitializer, REG[REGISTERS.indexOf("R7")]);
         tsInitializer -= 4;
-        BB.putInt(tsInitializer, REG[REGISTERS.indexOf("PC")]);
+        BB.putInt(tsInitializer, lblLocal);
         tsInitializer -= 4;
         BB.putInt(tsInitializer, curThreadSL);
         tsInitializer -= 4;
@@ -695,7 +699,7 @@ public class Main {
         BB.putInt(tsInitializer, (tsInitializer - 8));
         tsInitializer -= 4;
         BB.putInt(tsInitializer, (tsInitializer - 4));
-        queue.add(currentThreadID);
+        queue.add(threadID);
     }
 
     private static void saveRegisters(int threadID) {
@@ -726,14 +730,11 @@ public class Main {
         tsInitializer -= 4;
         BB.putInt(tsInitializer, REG[REGISTERS.indexOf("SB")]);
         queue.add(threadID);
-        currentThreadID = queue.remove();
     }
 
     private static void getRegisters() {
-        if(!endFlag) {
-            currentThreadID = queue.remove();
-            endFlag = true;
-        }
+        currentThreadID = queue.remove();
+        endFlag = true;
         int tsGetter = (SB - (THREAD_STACK_SIZE * currentThreadID));
         REG[REGISTERS.indexOf("R0")] = BB.getInt(tsGetter);
         tsGetter -= 4;

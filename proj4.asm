@@ -29,6 +29,7 @@ ARR         .INT    0
             .INT    0
             .INT    0
 CNT         .INT    0
+MUTEX       .INT    -1
 F           .BYT    'F'
 a           .BYT    'a'
 c           .BYT    'c'
@@ -44,34 +45,34 @@ NL          .BYT    '\n'
 PROMPT      .BYT    '>'
 COMMA       .BYT    ','
 
-; Using R0 for manipulating Stack Registers
-; Using R3 for TRP
-; Using R4 for Stack Value
-; Using R5 - R7 to Store Values
-; Using R8 as PC
-; Using R9 as SL
-; Using R10 as SP
-; Using R11 as FP
-; Using R12 as SB
-
+    ;R7 used for ThreadID
+    ;R3 used for TRP
+    ;R2 used for InputValue
+            LDB     R3  PROMPT  ;Put a prompt on the screen
+            TRP     3
+            LDB     R3  SPACE
+            TRP     3
+            TRP     2           ;Get integer input from console
+            BRZ     R3  PART3
+            JMP     ALLOCARR
 START       LDB     R3  PROMPT  ;Put a prompt on the screen
             TRP     3
             LDB     R3  SPACE
             TRP     3
             TRP     2           ;Get integer input from console
             BRZ     R3  PARR    ;If zero is entered print the array
-            LCK
-            MOV     R7  R3      ;Store the input value into R7
+ALLOCARR    LCK
+            MOV     R2  R3      ;Store the input value into R2
             LDA     R5  ARR     ;Load the Array R5
             LDR     R6  CNT     ;Load the current array position into R6
             ADD     R5  R6      ;Move to the correct position in the array
-            STR     R7  R5
+            STR     R2  R5
             ADI     R6  4
             STR     R6  CNT
             ULK
 ;FACTORIAL
     ; Test for overflow (SP <  SL)
-            MOV    	R0  SP
+FACTALLOC   MOV    	R0  SP
             ADI	    R0  -12	; Adjust for space needed (Rtn Address & PFP & 1 int)
             CMP     R0  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
             BLT	    R0  OVERFLOW
@@ -82,7 +83,7 @@ START       LDB     R3  PROMPT  ;Put a prompt on the screen
             STR	    R0  SP	; PFP to SP 			(PFP = FP)
             ADI	    SP  -4	; Increment SP
     ; Passed Parameters onto the Stack (Pass by Value)
-            STR     R7  SP  ; Store value that was input at the SP
+            STR     R2  SP  ; Store value that was input at the SP
             ADI	    SP  -4
     ; Set return address
             MOV 	R0  PC	; PC incremented by 1 instruction
@@ -116,7 +117,7 @@ START       LDB     R3  PROMPT  ;Put a prompt on the screen
             TRP     3
             LDB     R3  SPACE
             TRP     3
-            MOV     R3  R7
+            MOV     R3  R2
             TRP     1
             LDB     R3  SPACE
             TRP     3
@@ -135,15 +136,15 @@ START       LDB     R3  PROMPT  ;Put a prompt on the screen
             STR     R3  R5      ;Store the Y vale into the open position in array
             ADI     R6  4
             STR     R6  CNT
-            ULK
             LDB     R3  NL
             TRP     3
+            ULK
             END
     ; Loop to factorial function until zero is pressed
             JMP     START //TODO difference here
-PARR        SUB     R5  R5      ;Front of the array
+PARR        TRP 99
+            SUB     R5  R5      ;Front of the array
             LDR     R6  CNT     ;Back of the array
-            BRZ     R6  PART3
             ADI     R6  -4
 WHILEARR    LDA     R1  ARR
             ADD     R1  R5
@@ -163,25 +164,34 @@ WHILEARR    LDA     R1  ARR
             TRP     3
             ADI     R5  4
             ADI     R6  -4
-            MOV     R3  R5
-            CMP     R3  R6
-            BLT     R3  WHILEARR
+            MOV     R1  R5
+            CMP     R1  R6
+            BLT     R1  WHILEARR
+            SUB     R1  R1
+            ADI     R1  1
+            CMP     R1  R7
+            BRZ     R1  FINISH
 PART3       SUB     R5  R5          ;JMP FINISH
             STR     R5  CNT
-            LDB R3 NL
+            LDB     R3  NL
             TRP 3
             TRP 3
-            LCK
-PART3WHILE  LDB     R3  PROMPT  ;Put a prompt on the screen
+PART3WHILE            LCK
+  LDB     R3  PROMPT  ;Put a prompt on the screen
             TRP     3
             LDB     R3  SPACE
             TRP     3
             TRP     2           ;Get integer input from console
             BRZ     R3  PART3END;TODO Different
-            RUN     R7  FACTO
+            RUN     R7  PART3END
             JMP     PART3WHILE
 PART3END    ULK
-            BLK
+            BRZ     R7  BLOCK
+            JMP     ALLOCARR
+BLOCK       BLK
+            SUB     R7  R7
+            ADI     R7  1
+            JMP     PARR
 FINISH      TRP     0
 
 ;FACTO DECLARATION
@@ -190,8 +200,8 @@ FINISH      TRP     0
 FACTO       MOV     R0  FP
             ADI     R0  -8
             LDR     R5  R0    ; load param n into register 5
-            SUB     R7  R7
-            ADI     R7  1
+            SUB     R6  R6
+            ADI     R6  1
             BRZ     R5  NZERO
 ;FACTORIAL
     ; Test for overflow (SP <  SL)
@@ -218,11 +228,11 @@ FACTO       MOV     R0  FP
             STR     R0  FP  ; Return Address to the Beginning of the Frame
             JMP     FACTO	; Call Function
     ; n * fact(n – 1)
-            MOV     R7  FP
-            ADI     R7  -8
-            LDR     R7  R7
+            MOV     R6  FP
+            ADI     R6  -8
+            LDR     R6  R6
             LDR     R0  SP
-            MUL     R7  R0
+            MUL     R6  R0
     ; Test for Underflow (SP > SB)
 NZERO       MOV  	SP  FP	    ; De-allocate Current Activation Record (SP = FP)
             MOV 	R0  SP
@@ -233,7 +243,7 @@ NZERO       MOV  	SP  FP	    ; De-allocate Current Activation Record (SP = FP)
             MOV     R0  FP
             ADI     R0  -4
             LDR     FP  R0   ; Point at Previous Activation Record 	(FP = PFP)
-            STR     R7  SP
+            STR     R6  SP
             JMR	    R5	       ; Jump to Return Address in Register R5
 
 ;OVERFLOW DECLARATION

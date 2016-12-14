@@ -29,6 +29,7 @@ ARR         .INT    0
             .INT    0
             .INT    0
 CNT         .INT    0
+MUTEX       .INT    -1
 F           .BYT    'F'
 a           .BYT    'a'
 c           .BYT    'c'
@@ -54,13 +55,20 @@ COMMA       .BYT    ','
 ; Using R11 as FP
 ; Using R12 as SB
 
+            LDB     R3  PROMPT  ;Put a prompt on the screen
+            TRP     3
+            LDB     R3  SPACE
+            TRP     3
+            TRP     2           ;Get integer input from console
+            BRZ     R3  PART3
+            JMP     ALLOCARR
 START       LDB     R3  PROMPT  ;Put a prompt on the screen
             TRP     3
             LDB     R3  SPACE
             TRP     3
             TRP     2           ;Get integer input from console
             BRZ     R3  PARR    ;If zero is entered print the array
-            ;LCK
+ALLOCARR    LCK
             MOV     R7  R3      ;Store the input value into R7
             LDA     R5  ARR     ;Load the Array R5
             LDR     R6  CNT     ;Load the current array position into R6
@@ -68,10 +76,10 @@ START       LDB     R3  PROMPT  ;Put a prompt on the screen
             STR     R7  R5
             ADI     R6  4
             STR     R6  CNT
-           ; ULK
+            ULK
 ;FACTORIAL
     ; Test for overflow (SP <  SL)
-            MOV    	R0  SP
+FACTALLOC   MOV    	R0  SP
             ADI	    R0  -12	; Adjust for space needed (Rtn Address & PFP & 1 int)
             CMP     R0  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
             BLT	    R0  OVERFLOW
@@ -128,14 +136,14 @@ START       LDB     R3  PROMPT  ;Put a prompt on the screen
             TRP     3
             LDR     R3  SP
             TRP     1
-           ; LCK
+            LCK
             LDA     R5  ARR     ;Load the Array R5
             LDR     R6  CNT     ;Load the current array position into R6
             ADD     R5  R6      ;Move to the correct position in the array
             STR     R3  R5      ;Store the Y vale into the open position in array
             ADI     R6  4
             STR     R6  CNT
-            ;ULK
+            ULK
             LDB     R3  NL
             TRP     3
             END
@@ -143,7 +151,7 @@ START       LDB     R3  PROMPT  ;Put a prompt on the screen
             JMP     START //TODO difference here
 PARR        SUB     R5  R5      ;Front of the array
             LDR     R6  CNT     ;Back of the array
-            BRZ     R6  PART3
+            BRZ     R6  PART3END
             ADI     R6  -4
 WHILEARR    LDA     R1  ARR
             ADD     R1  R5
@@ -163,24 +171,25 @@ WHILEARR    LDA     R1  ARR
             TRP     3
             ADI     R5  4
             ADI     R6  -4
-            MOV     R3  R5
-            CMP     R3  R6
-            BLT     R3  WHILEARR
+            MOV     R1  R5
+            CMP     R1  R6
+            BLT     R1  WHILEARR
 PART3       SUB     R5  R5          ;JMP FINISH
             STR     R5  CNT
             LDB R3 NL
             TRP 3
             TRP 3
-           ; LCK
+            LCK
 PART3WHILE  LDB     R3  PROMPT  ;Put a prompt on the screen
             TRP     3
             LDB     R3  SPACE
             TRP     3
             TRP     2           ;Get integer input from console
             BRZ     R3  PART3END;TODO Different
-            RUN     R7  FACTO
+            RUN     R7  FACTALLOC
             JMP     PART3WHILE
 PART3END    ULK
+            END
             BLK
 FINISH      TRP     0
 
@@ -189,7 +198,7 @@ FINISH      TRP     0
     ; Put local variable on the stack
 FACTO       MOV     R0  FP
             ADI     R0  -8
-            LDR     R0  R5    ; load param n into register 5
+            LDR     R5  R0    ; load param n into register 5
             SUB     R7  R7
             ADI     R7  1
             BRZ     R5  NZERO
