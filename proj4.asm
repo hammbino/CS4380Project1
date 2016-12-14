@@ -1,3 +1,4 @@
+CNT         .INT    0
 ARR         .INT    0
             .INT    0
             .INT    0
@@ -28,7 +29,6 @@ ARR         .INT    0
             .INT    0
             .INT    0
             .INT    0
-CNT         .INT    0
 MUTEX       .INT    -1
 F           .BYT    'F'
 a           .BYT    'a'
@@ -61,15 +61,7 @@ START       LDB     R3  PROMPT  ;Put a prompt on the screen
             TRP     3
             TRP     2           ;Get integer input from console
             BRZ     R3  PARR    ;If zero is entered print the array
-ALLOCARR    LCK
-            MOV     R2  R3      ;Store the input value into R2
-            LDA     R5  ARR     ;Load the Array R5
-            LDR     R6  CNT     ;Load the current array position into R6
-            ADD     R5  R6      ;Move to the correct position in the array
-            STR     R2  R5
-            ADI     R6  4
-            STR     R6  CNT
-            ULK
+ALLOCARR    MOV     R2  R3      ;Store the input value into R2
 ;FACTORIAL
     ; Test for overflow (SP <  SL)
 FACTALLOC   MOV    	R0  SP
@@ -90,6 +82,20 @@ FACTALLOC   MOV    	R0  SP
             ADI	    R0  36	; Compute Return Address (always a fixed amount)
             STR     R0  FP  ; Return Address to the Beginning of the Frame; Call function
             JMP     FACTO	; Call Function
+    ; Store values in the array
+            LCK
+            LDA     R5  ARR     ;Load the Array R5
+            LDR     R6  CNT     ;Load the current array position into R6
+            ADD     R5  R6      ;Move to the correct position in the array
+            STR     R2  R5
+            ADI     R6  4
+            ADI     R5  4      ;Move to the correct position in the array
+            LDR     R4  SP
+            STR     R4  R5      ;Store the Y vale into the open position in array
+            ADI     R6  4
+            STR     R6  CNT
+            ULK
+
     ; Display "Factorial of X is Y"
             LDB     R3  F
             TRP     3
@@ -129,21 +135,12 @@ FACTALLOC   MOV    	R0  SP
             TRP     3
             LDR     R3  SP
             TRP     1
-            LCK
-            LDA     R5  ARR     ;Load the Array R5
-            LDR     R6  CNT     ;Load the current array position into R6
-            ADD     R5  R6      ;Move to the correct position in the array
-            STR     R3  R5      ;Store the Y vale into the open position in array
-            ADI     R6  4
-            STR     R6  CNT
             LDB     R3  NL
             TRP     3
-            ULK
             END
     ; Loop to factorial function until zero is pressed
             JMP     START //TODO difference here
-PARR        TRP 99
-            SUB     R5  R5      ;Front of the array
+PARR        SUB     R5  R5      ;Front of the array
             LDR     R6  CNT     ;Back of the array
             ADI     R6  -4
 WHILEARR    LDA     R1  ARR
@@ -176,8 +173,8 @@ PART3       SUB     R5  R5          ;JMP FINISH
             LDB     R3  NL
             TRP 3
             TRP 3
-PART3WHILE            LCK
-  LDB     R3  PROMPT  ;Put a prompt on the screen
+            LCK
+PART3WHILE  LDB     R3  PROMPT  ;Put a prompt on the screen
             TRP     3
             LDB     R3  SPACE
             TRP     3
