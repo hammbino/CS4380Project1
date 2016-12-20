@@ -80,7 +80,7 @@ GD_ENDIF    MOV  	SP  FP	  ; De-allocate Current Activation Record 	(SP = FP)
             LDR     R0  FP     ; Point at Previous Activation Record 	(FP = PFP)
             JMR	    R5	       ; Jump to Return Address in Register R5
 
-;FLUSH DECLARATION ;TODO FUNCTION CHECKED
+;FLUSH DECLARATION
     ; Test for overflow of local variables(SP <  SL)
     ; Put local variable on the stack
 FLUSH       SUB     R4  R4

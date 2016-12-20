@@ -78,7 +78,7 @@ NL          .BYT   '\n'
                 JMP     RESET	; Call Function
                 TRP     0
 
-;RESET DECLARATION TODO FUNCTION CHECKED
+;RESET DECLARATION
     ; Test for overflow (SP <  SL)
 RESET       MOV     R5  SP  ; check for stack overflow for local variable k
             ADI     R5  -4

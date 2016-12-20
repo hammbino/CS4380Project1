@@ -148,7 +148,7 @@ FACTALLOC   MOV    	R0  SP
             TRP     3
             END
     ; Loop to factorial function until zero is pressed
-            JMP     START //TODO difference here
+            JMP     START
 PARR        SUB     R5  R5      ;Front of the array
             LDR     R6  CNT     ;Back of the array
             BRZ     R6  PART3END
@@ -185,7 +185,7 @@ PART3WHILE  LDB     R3  PROMPT  ;Put a prompt on the screen
             LDB     R3  SPACE
             TRP     3
             TRP     2           ;Get integer input from console
-            BRZ     R3  PART3END;TODO Different
+            BRZ     R3  PART3END
             RUN     R7  FACTALLOC
             JMP     PART3WHILE
 PART3END    ULK

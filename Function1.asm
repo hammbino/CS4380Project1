@@ -25,7 +25,7 @@ START LDB R3 J
       ADI	SP  -4	; Adjust Stack Pointer for PFP
 ; Passed Parameters onto the Stack (Pass by Value)
       LDR   R5  A
-      STR	R5  SP  ; Place A on the Stack TODO problem here
+      STR	R5  SP  ; Place A on the Stack
       ADI	SP  -4
       LDR	R5  B
       STR	R5  SP	; Place B on the Stack

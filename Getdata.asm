@@ -85,7 +85,7 @@ NL          .BYT   '\n'
                 JMP     1M_ELSE
 ;GETDATA //Get most significant byte
     ; Test for overflow (SP <  SL)
-1M_IF           MOV    	R5  SP  ; TODO test with plus or minus
+1M_IF           MOV    	R5  SP
                 ADI	    R5  -8	; Adjust for space needed (Rtn Address & PFP)
                 CMP 	R5  SL	; 0 (SP=SL), Pos (SP > SL), Neg (SP < SL)
                 BLT	    R5  OVERFLOW
@@ -118,7 +118,7 @@ NL          .BYT   '\n'
                 LDR     R4  CNT
                 ADI     R4  1
                 STR     R4  CNT
-1M_END_IF       JMP     2M_WHILE ;TODO SHOULD BE 2M WHILE
+1M_END_IF       JMP     2M_WHILE
 1M_END_WHILE    TRP   0
 2M_WHILE        LDR     R0  DATA
                 SUB     R1  R1
@@ -127,7 +127,7 @@ NL          .BYT   '\n'
 
 
 
-;GETDATA DECLARATION ; TODO CHECK FUNCTION (NUMBER TOO BIG IS BROKEN)
+;GETDATA DECLARATION
     ; Test for overflow (SP <  SL)
     ; Put local variable on the stack
 GETDATA   LDR   R4  CNT
@@ -206,7 +206,7 @@ GD_ENDIF    MOV  	SP  FP	  ; De-allocate Current Activation Record 	(SP = FP)
             LDR     R0  FP     ; Point at Previous Activation Record 	(FP = PFP)
             JMR	    R5	       ; Jump to Return Address in Register R5
 
-;FLUSH DECLARATION ;TODO FUNCTION CHECKED
+;FLUSH DECLARATION
     ; Test for overflow of local variables(SP <  SL)
     ; Put local variable on the stack
 FLUSH       SUB     R4  R4

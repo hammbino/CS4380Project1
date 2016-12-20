@@ -77,7 +77,7 @@ NL          .BYT   '\n'
                 ADI	    R4  36	    ; Compute Return Address (always a fixed amount)
                 STR	    R4  FP      ; Return Address to the Beginning of the Frame
     ; Call function
-                JMP	    OPD	        ; Call Function ; TODO Correct to here
+                JMP	    OPD	        ; Call Function
 LDR  R3  OPDV
 TRP  1
                 TRP 0
@@ -93,7 +93,7 @@ OPD         MOV     R5  SP  ; check for stack overflow for local variable k
             STR	    R5  SP	; Place T initialized to 0 on the Stack
             ADI	    SP  -4
     ;if/else statements
-            SUB     R7  R7     ;Integer value to store  ; TODO Correct to here
+            SUB     R7  R7     ;Integer value to store
             MOV     R0  FP
             ADI     R0  -16
 IF0_OPD     LDB     R2  R0
