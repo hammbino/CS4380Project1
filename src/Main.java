@@ -51,7 +51,7 @@ public class Main {
         while (numberOfFilePasses < 2) {
             //check to see if a scanner can be created using the file that was input
             try {
-                fileReader = new Scanner(new FileInputStream(args[0])).useDelimiter("\\n|\\r|;");
+                fileReader = new Scanner(new FileInputStream(args[0])).useDelimiter("(\\n|\\r|;)");
             } catch (FileNotFoundException x) {
                 System.out.println("ERROR: Unable to open file " + args[0]);
                 x.printStackTrace();
